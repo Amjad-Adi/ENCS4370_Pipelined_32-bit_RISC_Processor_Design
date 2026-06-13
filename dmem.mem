@@ -1,0 +1,14 @@
+// dmem.mem — Sample data memory initialization file
+// Format  : One 32-bit hex word per line (no "0x" prefix)
+// Usage   : $readmemh("dmem.mem", MEM) in DataMemory.v
+//
+// Pre-loaded values for testing LW, SW, SWAP instructions
+//
+// Address 0x00000000 → Word 0 = 0x00000064 (decimal 100)
+00000064
+// Address 0x00000004 → Word 1 = 0x000000FF (decimal 255)
+000000FF
+// Address 0x00000008 → Word 2 = 0x0000000A (decimal 10)
+0000000A
+// Address 0x0000000C → Word 3 = 0x00000000 (decimal 0)
+00000000

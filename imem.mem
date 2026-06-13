@@ -1,0 +1,73 @@
+
+
+// SECTION 1: Register File Write/Read
+// ADDI R1, R0, 1   → R1 = 1
+28400001
+// ADDI R2, R0, 2   → R2 = 2
+28800002
+// ADDI R3, R0, 3   → R3 = 3
+28C00003
+// ADDI R4, R0, 4   → R4 = 4
+29000004
+// ADDI R5, R0, 5   → R5 = 5
+29400005
+
+// SECTION 2: Adder and MUX Register path
+// ADD R6, R1, R2   → R6 = 3
+01848000
+// ADD R7, R3, R4   → R7 = 7
+01CD0000
+// ADD R8, R5, R6   → R8 = 8
+02158000
+
+// SECTION 3: MUX ALUSrc Immediate path
+// ADDI R9, R0, 100  → R9 = 100
+2A400064
+// ADDI R10, R9, 50  → R10 = 150
+2AA40032
+
+// SECTION 4: Data Memory SW then LW
+// SW R8, 0(R0)     → Mem(0) = 8
+3A000000
+// LW R11, 0(R0)    → R11 = 8
+36C00000
+
+// SECTION 5: DM at offset
+// SW R10, 4(R1)    → Mem(5) = 150
+3A810004
+// LW R12, 4(R1)    → R12 = 150
+37010004
+
+// SECTION 6: R0 hardwired zero
+// ADDI R0, R0, 99  → IGNORED (R0 stays 0)
+28000063
+// ADD R13, R0, R1  → R13 = 0 + 1 = 1
+34040000
+
+// SECTION 7: CLR instruction
+// CLR R5           → R5 = 0
+21400000
+// ADD R14, R5, R2  → R14 = 0 + 2 = 2
+03948000
+
+// SECTION 8: BEQ branch taken
+// BEQ R1, R1, 2    → branch taken, skip 2 instructions
+40410002
+// ADDI R15, R0, 99 → SKIPPED
+2BC00063
+// ADDI R15, R0, 99 → SKIPPED
+2BC00063
+// ADDI R15, R0, 55 → R15 = 55
+2BC00037
+
+// SECTION 9: BNE branch
+// BNE R1, R2, 1    → branch taken (R1!=R2), skip 1 instruction
+44480001
+// ADDI R15, R0, 0  → SKIPPED
+2BC00000
+// ADD R15, R1, R2  → R15 = 1 + 2 = 3
+03C48000
+
+// SECTION 10: Infinite loop
+// J 0
+48000000
