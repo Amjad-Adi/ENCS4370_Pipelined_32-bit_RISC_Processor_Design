@@ -23,6 +23,7 @@
   * Registers named R0 through R15
   * Each register is 32 bits wide
   * Full register selected at a time
+  * R0 is hardwired to zero. Any attempt to write to R0 must be ignored. 
 
 **Additional Components**
 * 2-to-1 Multiplexer (32-bit inputs)
