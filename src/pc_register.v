@@ -1,10 +1,10 @@
-module pc_register(input clk,input rst,input [31:0] next_pc,output reg [31:0] pc);
-
-always @(posedge clk or posedge rst) begin
-    if (rst)
-        pc <= 32'b0;
+module pc_register(input clk,input reset,input [31:0] in,output reg [31:0] out);
+	
+always @(posedge clk or posedge reset) begin
+    if (reset)
+        out <= 32'b0;
     else
-        pc <= next_pc;
+        out <= in;
 end
 
 endmodule
