@@ -20,11 +20,15 @@
 
 `timescale 1ps / 1ps
 
-module Mux2to1_32bit (
-    input [31:0] In0,
-    input [31:0] In1,
-    input [31:0] Sel,
-    output [31:0] Out
+module Mux2to1 #(
+    parameter N = 32
+)(
+    input  [N-1:0] In0,
+    input  [N-1:0] In1,
+    input          Sel,
+    output [N-1:0] Out
 );
+
     assign Out = Sel ? In1 : In0;
+
 endmodule

@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module Extender(
+module Extender18bit(
     input [17:0] Imm,
     input ExtOp,
     output [31:0] ExtImm
