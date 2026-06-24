@@ -20,18 +20,7 @@
 
 `timescale 1ps / 1ps
 
-module Decoder4to16 (
-    input   [3:0]  in,       
-    input	enable,   
-    output reg [15:0] out       
-);
-    always @(*) begin
-        out = 16'b0;            
-        if (enable) begin
-            out = 16'b1 << in;  
-        end
-    end
-endmodule
+
 
 
 module Mux16to1_32bit (
@@ -68,13 +57,13 @@ endmodule
 
 module RegisterFile (
     input  Clk,          
-    input  RegWrite,     
-    input  [3:0] RdAddr,       
-    input  [3:0] RsAddr,      
-    input  [3:0] RtAddr,       
-    input  [31:0] WriteData,    
-    output [31:0] RsData,       
-    output [31:0] RtData       
+    input  W,     
+    input  [3:0] RA,       
+    input  [3:0] RB,      
+    input  [3:0] RW,       
+    input  [31:0] BUSW,    
+    output [31:0] BUSA,       
+    output [31:0] BUSB       
 );
 
     reg [31:0] REG [0:15];
@@ -87,41 +76,34 @@ module RegisterFile (
     end
 
    
-    wire [15:0] decode_out;    
-
-    Decoder4to16 decoder (
-        .in(RdAddr),
-        .enable(RegWrite),
-        .out(decode_out)
-    );
-
+ 
     
     always @(posedge Clk) begin
-        if (RegWrite && RdAddr != 4'd0) begin
+        if (W && RW != 4'd0) begin
             
-            REG[RdAddr] <= WriteData;
+            REG[RW] <= BUSW;
         end
         
         REG[0] <= 32'b0;
     end
 
     
-    Mux16to1_32bit mux_Rs (
+    Mux16to1_32bit mux_RA (
         .in0  (REG[0]),  .in1  (REG[1]),  .in2  (REG[2]),  .in3  (REG[3]),
         .in4  (REG[4]),  .in5  (REG[5]),  .in6  (REG[6]),  .in7  (REG[7]),
         .in8  (REG[8]),  .in9  (REG[9]),  .in10 (REG[10]), .in11 (REG[11]),
         .in12 (REG[12]), .in13 (REG[13]), .in14 (REG[14]), .in15 (REG[15]),
-        .sel  (RsAddr),
-        .out  (RsData)
+        .sel  (RA),
+        .out  (BUSA)
     );
 
-    Mux16to1_32bit mux_Rt (
+    Mux16to1_32bit mux_RB (
         .in0  (REG[0]),  .in1  (REG[1]),  .in2  (REG[2]),  .in3  (REG[3]),
         .in4  (REG[4]),  .in5  (REG[5]),  .in6  (REG[6]),  .in7  (REG[7]),
         .in8  (REG[8]),  .in9  (REG[9]),  .in10 (REG[10]), .in11 (REG[11]),
         .in12 (REG[12]), .in13 (REG[13]), .in14 (REG[14]), .in15 (REG[15]),
-        .sel  (RtAddr),
-        .out  (RtData)
+        .sel  (RB),
+        .out  (BUSB)
     );
 
 endmodule

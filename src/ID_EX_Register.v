@@ -27,13 +27,13 @@ module ID_EX_Register (
     input Flush,       
     input Stall,   
  
-    input  [31:0] ID_PC1,       
-    input  [31:0] ID_BusA,     
-    input  [31:0] ID_BusB,      
-    input  [31:0] ID_Imm,      
-    input  [3:0]  ID_RsAddr,   
-    input  [3:0]  ID_RtAddr,    
-    input  [3:0]  ID_RdAddr,   
+    input  [31:0] PCPlus1_IFID,       
+    input  [31:0] BusA_IFID,     
+    input  [31:0] BusB_IFID,      
+    input  [31:0] Immediate_IFID,      
+    input  [3:0]  ReadRegisterA_IFID,   
+    input  [3:0]  ReadRegisterB_IFID,    
+    input  [3:0]  WriteRegister_IFID,   
  
     
     input  ID_RegWrite,
@@ -47,13 +47,13 @@ module ID_EX_Register (
     input  ID_ExtOp,
     input  [2:0]  ID_ALUOp,
  
-    output reg [31:0] EX_PC1,
-    output reg [31:0] EX_BusA,
-    output reg [31:0] EX_BusB,
-    output reg [31:0] EX_Imm,
-    output reg [3:0]  EX_RsAddr,
-    output reg [3:0]  EX_RtAddr,
-    output reg [3:0]  EX_RdAddr,
+    output reg [31:0] PCPlus1_IDEX,
+    output reg [31:0] BusA_IDEX,
+    output reg [31:0] BusB_IDEX,
+    output reg [31:0] Immediate_IDEX,
+    output reg [3:0]  ReadRegisterA_IDEX,
+    output reg [3:0]  ReadRegisterB_IDEX,
+    output reg [3:0]  WriteRegister_IDEX,
 
     output reg  	  EX_RegWrite,
     output reg        EX_RegDst,
@@ -64,19 +64,19 @@ module ID_EX_Register (
     output reg        EX_Branch,
     output reg        EX_Jump,
     output reg        EX_ExtOp,
-    output reg [2:0]  EX_ALUOp
+    output reg [2:0]  ALUOp_IDEX
 );
  
     always @(posedge Clk) begin
         if (Reset || Flush) begin
            
-            EX_PC1      <= 32'b0;
-            EX_BusA     <= 32'b0;
-            EX_BusB     <= 32'b0;
-            EX_Imm      <= 32'b0;
-            EX_RsAddr   <= 4'b0;
-            EX_RtAddr   <= 4'b0;
-            EX_RdAddr   <= 4'b0;
+            PCPlus1_IDEX      <= 32'b0;
+            BusA_IDEX     <= 32'b0;
+            BusB_IDEX     <= 32'b0;
+            Immediate_IDEX      <= 32'b0;
+            ReadRegisterA_IDEX   <= 4'b0;
+            ReadRegisterB_IDEX   <= 4'b0;
+            WriteRegister_IDEX   <= 4'b0;
             EX_RegWrite <= 1'b0;
             EX_RegDst   <= 1'b0;
             EX_ALUSrc   <= 1'b0;
@@ -86,16 +86,16 @@ module ID_EX_Register (
             EX_Branch   <= 1'b0;
             EX_Jump     <= 1'b0;
             EX_ExtOp    <= 1'b0;
-            EX_ALUOp    <= 3'b0;
+            ALUOp_IDEX    <= 3'b0;
         end
         else if (Stall) begin
-            EX_PC1      <= EX_PC1;
-            EX_BusA     <= EX_BusA;
-            EX_BusB     <= EX_BusB;
-            EX_Imm      <= EX_Imm;
-            EX_RsAddr   <= EX_RsAddr;
-            EX_RtAddr   <= EX_RtAddr;
-            EX_RdAddr   <= EX_RdAddr;
+            PCPlus1_IDEX      <= PCPlus1_IDEX;
+            BusA_IDEX     <= BusA_IDEX;
+            BusB_IDEX     <= BusB_IDEX;
+            Immediate_IDEX      <= Immediate_IDEX;
+            ReadRegisterA_IDEX   <= ReadRegisterA_IDEX;
+            ReadRegisterB_IDEX   <= ReadRegisterB_IDEX;
+            WriteRegister_IDEX   <= WriteRegister_IDEX;
             EX_RegWrite <= EX_RegWrite;
             EX_RegDst   <= EX_RegDst;
             EX_ALUSrc   <= EX_ALUSrc;
@@ -105,16 +105,16 @@ module ID_EX_Register (
             EX_Branch   <= EX_Branch;
             EX_Jump     <= EX_Jump;
             EX_ExtOp    <= EX_ExtOp;
-            EX_ALUOp    <= EX_ALUOp;
+            ALUOp_IDEX    <= ALUOp_IDEX;
         end
         else begin
-            EX_PC1      <= ID_PC1;
-            EX_BusA     <= ID_BusA;
-            EX_BusB     <= ID_BusB;
-            EX_Imm      <= ID_Imm;
-            EX_RsAddr   <= ID_RsAddr;
-            EX_RtAddr   <= ID_RtAddr;
-            EX_RdAddr   <= ID_RdAddr;
+            PCPlus1_IDEX      <= PCPlus1_IFID;
+            BusA_IDEX     <= BusA_IFID;
+            BusB_IDEX     <= BusB_IFID;
+            Immediate_IDEX      <= Immediate_IFID;
+            ReadRegisterA_IDEX   <= ReadRegisterA_IFID;
+            ReadRegisterB_IDEX   <=ReadRegisterB_IFID;
+            WriteRegister_IDEX   <= WriteRegister_IFID;
             EX_RegWrite <= ID_RegWrite;
             EX_RegDst   <= ID_RegDst;
             EX_ALUSrc   <= ID_ALUSrc;
@@ -124,7 +124,7 @@ module ID_EX_Register (
             EX_Branch   <= ID_Branch;
             EX_Jump     <= ID_Jump;
             EX_ExtOp    <= ID_ExtOp;
-            EX_ALUOp    <= ID_ALUOp;
+            ALUOp_IDEX    <= ID_ALUOp;
         end
     end
  

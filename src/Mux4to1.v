@@ -1,15 +1,24 @@
 `timescale 1ns / 1ps
 
-module Mux4to1(input  [31:0] in0,input  [31:0] in1,input  [31:0] in2,input  [31:0] in3,input  [1:0]  sel,output [31:0] out);
-
-    wire [31:0] MuxOut0;
-    wire [31:0] MuxOut1;
+module Mux4to1 #(
+    parameter WIDTH = 32
+)(
+    input [WIDTH-1:0] Input0,
+    input [WIDTH-1:0] Input1,
+    input [WIDTH-1:0] Input2,
+    input [WIDTH-1:0] Input3,
+    input [1:0] Select,
+    output [WIDTH-1:0] OutputData
+);
+	
+	wire [WIDTH - 1:0] MuxOut0;
+    wire [WIDTH -1:0] MuxOut1;
 
     // First stage
-    Mux2to1 MUX0 (.In0(in0),.In1(in1),.Sel(sel[0]),.Out(MuxOut0));
-    Mux2to1 MUX1 (.In0(in2),.In1(in3),.Sel(sel[0]),.Out(MuxOut1));
+    Mux2to1 #(WIDTH) MUX0 (.Input0(Input0),.Input1(Input1),.Select(Select[0]),.OutputData(MuxOut0));
+    Mux2to1 #(WIDTH) MUX1 (.Input0(Input2),.Input1(Input3),.Select(Select[0]),.OutputData(MuxOut1));
 
     // Second stage
-    Mux2to1 MUX2 (.In0(MuxOut0),.In1(MuxOut1),.Sel(sel[1]),.Out(out));
+    Mux2to1  #(WIDTH) MUX2 (.Input0(MuxOut0),.Input1(MuxOut1),.Select(Select[1]),.OutputData(OutputData));
 
 endmodule

@@ -27,77 +27,77 @@ module EX_MEM_Register (
     input         Flush,
     input         Stall,
  
-    input  [31:0] EX_PC1,        
-    input  [31:0] EX_ALUResult,     
-    input  [31:0] EX_RtData,        
-    input  [3:0]  EX_RdAddr,       
-    input         EX_Equal,        
+    input  [31:0] PCPlus1_IDEX,        
+    input  [31:0] ALUResult_IDEX,     
+    input  [31:0] BusB_IDEX,        
+    input  [3:0]  WriteRegister_IDEX,       
+    input         Equal_IDEX,        
  
   
-    input         EX_RegWrite,
-    input         EX_MemRead,
-    input         EX_MemWrite,
-    input         EX_MemToReg,
-    input         EX_Branch,
-    input         EX_Jump,
+    input         RegWrite_IDEX,
+    input         MemRead_IDEX,
+    input         MemWrite_IDEX,
+    input         MemToReg_IDEX,
+    input         Branch_IDEX,
+    input         Jump_IDEX,
 
-    output reg [31:0] MEM_PC1,
-    output reg [31:0] MEM_ALUResult,
-    output reg [31:0] MEM_RtData,
-    output reg [3:0]  MEM_RdAddr,
-    output reg        MEM_Equal,
+    output reg [31:0] PCPlus1_EXMEM,
+    output reg [31:0] ALUResult_EXMEM,
+    output reg [31:0] BusB_EXMEM,
+    output reg [3:0]  WriteRegister_EXMEM,
+    output reg        Equal_EXMEM,
 
-    output reg        MEM_RegWrite,
-    output reg        MEM_MemRead,
-    output reg        MEM_MemWrite,
-    output reg        MEM_MemToReg,
-    output reg        MEM_Branch,
-    output reg        MEM_Jump
+    output reg        RegWrite_EXMEM,
+    output reg        MemRead_EXMEM,
+    output reg        MemWrite_EXMEM,
+    output reg        MemToReg_EXMEM,
+    output reg        Branch_EXMEM,
+    output reg        Jump_EXMEM
 );
  
     always @(posedge Clk) begin
         if (Reset || Flush) begin
           
-            MEM_PC1       <= 32'b0;
-            MEM_ALUResult <= 32'b0;
-            MEM_RtData    <= 32'b0;
-            MEM_RdAddr    <= 4'b0;
-            MEM_Equal     <= 1'b0;
+            PCPlus1_EXMEM       <= 32'b0;
+            ALUResult_EXMEM <= 32'b0;
+            BusB_EXMEM    <= 32'b0;
+            WriteRegister_EXMEM    <= 4'b0;
+            Equal_EXMEM     <= 1'b0;
          
-            MEM_RegWrite  <= 1'b0;
-            MEM_MemRead   <= 1'b0;
-            MEM_MemWrite  <= 1'b0;
-            MEM_MemToReg  <= 1'b0;
-            MEM_Branch    <= 1'b0;
-            MEM_Jump      <= 1'b0;
+            RegWrite_EXMEM  <= 1'b0;
+            MemRead_EXMEM   <= 1'b0;
+            MemWrite_EXMEM  <= 1'b0;
+            MemToReg_EXMEM  <= 1'b0;
+            Branch_EXMEM    <= 1'b0;
+            Jump_EXMEM      <= 1'b0;
         end
         else if (Stall) begin
         
-            MEM_PC1       <= MEM_PC1;
-            MEM_ALUResult <= MEM_ALUResult;
-            MEM_RtData    <= MEM_RtData;
-            MEM_RdAddr    <= MEM_RdAddr;
-            MEM_Equal     <= MEM_Equal;
-            MEM_RegWrite  <= MEM_RegWrite;
-            MEM_MemRead   <= MEM_MemRead;
-            MEM_MemWrite  <= MEM_MemWrite;
-            MEM_MemToReg  <= MEM_MemToReg;
-            MEM_Branch    <= MEM_Branch;
-            MEM_Jump      <= MEM_Jump;
+            PCPlus1_EXMEM       <= PCPlus1_EXMEM;
+            ALUResult_EXMEM <= ALUResult_EXMEM;
+            BusB_EXMEM    <= BusB_EXMEM;
+            WriteRegister_EXMEM    <= WriteRegister_EXMEM;
+            Equal_EXMEM     <= Equal_EXMEM;
+            RegWrite_EXMEM  <= RegWrite_EXMEM;
+            MemRead_EXMEM   <= MemRead_EXMEM;
+            MemWrite_EXMEM  <= MemWrite_EXMEM;
+            MemToReg_EXMEM  <= MemToReg_EXMEM;
+            Branch_EXMEM    <= Branch_EXMEM;
+            Jump_EXMEM      <= Jump_EXMEM;
         end
         else begin
         
-            MEM_PC1       <= EX_PC1;
-            MEM_ALUResult <= EX_ALUResult;
-            MEM_RtData    <= EX_RtData;
-            MEM_RdAddr    <= EX_RdAddr;
-            MEM_Equal     <= EX_Equal;
-            MEM_RegWrite  <= EX_RegWrite;
-            MEM_MemRead   <= EX_MemRead;
-            MEM_MemWrite  <= EX_MemWrite;
-            MEM_MemToReg  <= EX_MemToReg;
-            MEM_Branch    <= EX_Branch;
-            MEM_Jump      <= EX_Jump;
+            PCPlus1_EXMEM       <= PCPlus1_IDEX ;
+            ALUResult_EXMEM <=  ALUResult_IDEX;
+            BusB_EXMEM    <= BusB_IDEX;
+            WriteRegister_EXMEM    <= WriteRegister_IDEX;
+            Equal_EXMEM     <= Equal_IDEX;
+            RegWrite_EXMEM  <= RegWrite_IDEX;
+            MemRead_EXMEM <= MemRead_IDEX;
+            MemWrite_EXMEM <= MemWrite_IDEX;
+            MemToReg_EXMEM  <= MemToReg_IDEX;
+           Branch_EXMEM <= Branch_IDEX;
+            Jump_EXMEM      <= Jump_IDEX;
         end
     end
  

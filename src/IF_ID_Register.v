@@ -27,26 +27,26 @@ module IF_ID_Register (
     input         Flush,          
     input         Stall,           
  
-    input  [31:0] IF_PC1,           
-    input  [31:0] IF_Instruction,  
+    input  [31:0] PCPlus1_IF,           
+    input  [31:0] Instruction_IF,  
  
    
-    output reg [31:0] ID_PC1,           
-    output reg [31:0] ID_Instruction   
+    output reg [31:0] PCPlus1_IFID,           
+    output reg [31:0] Instruction_IFID   
 );
  
     always @(posedge Clk) begin
         if (Reset || Flush) begin
-            ID_PC1        <= 32'b0;
-            ID_Instruction <= 32'b0;
+            PCPlus1_IFID        <= 32'b0;
+            Instruction_IFID <= 32'b0;
         end
         else if (Stall) begin
-            ID_PC1        <= ID_PC1;
-            ID_Instruction <= ID_Instruction;
+            PCPlus1_IFID        <= PCPlus1_IFID ;
+            Instruction_IFID <= Instruction_IFID;
         end
         else begin
-            ID_PC1        <= IF_PC1;
-            ID_Instruction <= IF_Instruction;
+            PCPlus1_IFID        <= PCPlus1_IF;
+            Instruction_IFID <= Instruction_IF;
         end
     end
  

@@ -1,14 +1,14 @@
 //-----------------------------------------------------------------------------
 //
-// Title       : Mux2to1
+// Title       : Adder32bit
 // Design      : SPA
 // Author      : 1231192@birzeit.student.edu
 // Company     : BZU
 //
 //-----------------------------------------------------------------------------
 //
-// File        : c:/Users/ameer/OneDrive/Desktop/AHDL_Design/SPA/SPA/src/Mux2to1.v
-// Generated   : Sat Jun 13 21:19:41 2026
+// File        : c:/Users/ameer/OneDrive/Desktop/AHDL_Design/SPA/SPA/src/Adder32bit.v
+// Generated   : Sat Jun 13 21:23:15 2026
 // From        : Interface description file
 // By          : ItfToHdl ver. 1.0
 //
@@ -20,15 +20,15 @@
 
 `timescale 1ps / 1ps
 
-module Mux2to1 #(
+
+module Adder #(
     parameter WIDTH = 32
 )(
-    input  [WIDTH-1:0] Input0,
-    input  [WIDTH-1:0] Input1,
-    input          Select,
-    output [WIDTH-1:0] OutputData
+    input [WIDTH-1:0] OperandA,
+    input [WIDTH-1:0] OperandB,
+    output [WIDTH-1:0] Result
 );
 
-    assign OutputData = Select ? Input1 : Input0;
-
+    assign Result = OperandA + OperandB;
+ 
 endmodule
