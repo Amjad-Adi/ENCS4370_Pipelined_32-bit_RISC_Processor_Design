@@ -116,6 +116,66 @@ Register #(4) Control_Register (...);
 ```verilog
 Register #(64) Pipeline_Register (...);
 ```
+#### 5. Module Interface Simplification and Initialization
+
+To keep the design consistent and minimize unnecessary complexity during the pipelining phase, review all modules and simplify their interfaces where appropriate.
+
+##### Required Changes
+
+* Use `initial` blocks for initialization whenever possible instead of introducing dedicated reset logic.
+* Avoid adding synchronous or asynchronous reset signals unless they are explicitly required by the module's functionality.
+* Remove unused inputs and outputs whenever they are not needed.
+* Do not introduce additional control, status, reset, enable, stall, flush, or debug signals without prior approval from Amjad.
+* Preserve the original functionality of each module while minimizing its interface.
+* When refactoring a module, ensure that every input and output has a clear purpose within the datapath.
+
+##### Examples
+
+Preferred:
+
+```verilog
+module ProgramCounter #(parameter WIDTH = 32)
+(
+    input CLK,
+    input [WIDTH-1:0] NextPC,
+    output reg [WIDTH-1:0] PC
+);
+
+initial begin
+    PC = 0;
+end
+
+always @(posedge CLK)
+begin
+    PC <= NextPC;
+end
+
+endmodule
+```
+
+Avoid:
+
+```verilog
+module ProgramCounter
+(
+    input CLK,
+    input reset,
+    input enable,
+    input flush,
+    input stall,
+    input [31:0] NextPC,
+    output reg [31:0] PC
+);
+```
+
+unless these signals are explicitly required and approved.
+
+##### Notes
+
+* Prefer simple interfaces over feature-rich interfaces during this integration phase.
+* Do not add new ports merely for future use.
+* If additional signals appear necessary for a module, discuss them with Amjad before modifying the interface.
+* The goal is to keep the design clean, easy to integrate, and consistent across all modules.
 
 ### Deliverables
 
