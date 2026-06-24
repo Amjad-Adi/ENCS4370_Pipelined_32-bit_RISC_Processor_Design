@@ -1,4 +1,4 @@
-module PCControl(input wire [4:0] opcode, input wire Z, output wire [1:0] PCSrc);
+module PCControl(input wire [5:0] opcode, input wire Z, output wire [1:0] PCSrc);
 
     wire A4 = opcode[4]; wire A3 = opcode[3]; wire A2 = opcode[2]; wire A1 = opcode[1]; wire A0 = opcode[0];
 

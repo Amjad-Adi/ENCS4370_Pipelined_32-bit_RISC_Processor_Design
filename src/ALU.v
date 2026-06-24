@@ -8,15 +8,15 @@ module ALU(
 
 always @(*) begin
     case(ALUCtrl)
-        3'b000: Result = A + B;
-        3'b001: Result = A - B;
-        3'b010: Result = A & B;
-        3'b011: Result = A | B;
-        3'b100: Result = A ^ B;
-        3'b101: Result = ~(A | B);
-        3'b110: Result = A << B[4:0];
-        3'b111: Result = A >> B[4:0];
-        default: Result = 0;
+        3'b000: Result = A + B;          // ADD
+        3'b001: Result = A & B;          // AND
+        3'b010: Result = A | B;          // OR
+        3'b011: Result = A ^ B;          // XOR
+        3'b100: Result = A - B;          // SUB
+        3'b101: Result = ~(A | B);       // NOR
+        3'b110: Result = A << B[4:0];    // SLL
+        3'b111: Result = A >> B[4:0];    // SRL
+        default: Result = 32'b0;
     endcase
 end
 
