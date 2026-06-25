@@ -2,8 +2,7 @@ module ALU(
     input [31:0] OperandA,
     input [31:0] OperandB,
     input [2:0] ALUCtrl,
-    output reg [31:0] ALUResult,
-    output Equal
+    output reg [31:0] ALUResult
 );
 
 always @(*) begin
@@ -19,7 +18,5 @@ always @(*) begin
         default: ALUResult = 32'b0;
     endcase
 end
-
-assign Equal = (ALUResult == 0);
 
 endmodule

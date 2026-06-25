@@ -23,48 +23,34 @@
 //{{ Section below this comment is automatically maintained
 //    and may be overwritten
 //{module {RAW_Hazard_Detection}}
-
 module ForwardingUnit(
-    input  [3:0] Rs,
-    input  [3:0] Rt,
-
-    input  [3:0] EX_Rd,
-    input        EX_RegWr,
-
-    input  [3:0] MEM_Rd,
-    input        MEM_RegWr,
-
-    input  [3:0] WB_Rd,
-    input        WB_RegWr,
-
-    output reg [1:0] ForwardA,
-    output reg [1:0] ForwardB
+    input  wire [3:0] RA,
+    input  wire [3:0] RB,
+    input  wire [3:0] Rd2,
+    input  wire [3:0] Rd3,
+    input  wire [3:0] Rd4,
+    input  wire       EX_RegWr,
+    input  wire       MEM_RegWr,
+    input  wire       WB_RegWr,
+    input  wire       EX_MemRd,
+    output reg  [1:0] ForwardA,
+    output reg  [1:0] ForwardB,
+    output wire       Stall
 );
 
-always @(*) begin
-    // Default values
-    ForwardA = 2'b00;
-    ForwardB = 2'b00;
+    always @(*) begin
+        if      ((RA != 4'b0) && (RA == Rd2) && EX_RegWr)  ForwardA = 2'd1;
+        else if ((RA != 4'b0) && (RA == Rd3) && MEM_RegWr) ForwardA = 2'd2;
+        else if ((RA != 4'b0) && (RA == Rd4) && WB_RegWr)  ForwardA = 2'd3;
+        else                                                  ForwardA = 2'd0;
 
-    // ForwardA Logic
-    if ((Rs != 4'b0000) && (Rs == EX_Rd) && EX_RegWr)
-        ForwardA = 2'b01;
-    else if ((Rs != 4'b0000) && (Rs == MEM_Rd) && MEM_RegWr)
-        ForwardA = 2'b10;
-    else if ((Rs != 4'b0000) && (Rs == WB_Rd) && WB_RegWr)
-        ForwardA = 2'b11;
-    else
-        ForwardA = 2'b00;
+        if      ((RB != 4'b0) && (RB == Rd2) && EX_RegWr)  ForwardB = 2'd1;
+        else if ((RB != 4'b0) && (RB == Rd3) && MEM_RegWr) ForwardB = 2'd2;
+        else if ((RB != 4'b0) && (RB == Rd4) && WB_RegWr)  ForwardB = 2'd3;
+        else                                                  ForwardB = 2'd0;
+    end
 
-    // ForwardB Logic
-    if ((Rt != 4'b0000) && (Rt == EX_Rd) && EX_RegWr)
-        ForwardB = 2'b01;
-    else if ((Rt != 4'b0000) && (Rt == MEM_Rd) && MEM_RegWr)
-        ForwardB = 2'b10;
-    else if ((Rt != 4'b0000) && (Rt == WB_Rd) && WB_RegWr)
-        ForwardB = 2'b11;
-    else
-        ForwardB = 2'b00;
-end
+    assign Stall = (EX_MemRd == 1'b1) && ((ForwardA == 2'd1) || (ForwardB == 2'd1));
 
 endmodule
+
