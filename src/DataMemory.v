@@ -14,23 +14,14 @@ module DataMemory (
     initial begin
         $readmemh("dmem.mem", MEM);
         Data_Out = 32'b0;
-    end
-
-    // READ: synchronous on positive clock edge
-    // Registered read ensures correct pipeline timing
-    // MEM stage reads on posedge, result available for WB next cycle
+    end														  
     always @(posedge Clk) begin
         if (R)
             Data_Out <= MEM[Address[9:2]];
         else
             Data_Out <= 32'b0;
     end
-
-    // WRITE: synchronous on negative clock edge
-    // negedge write + posedge read means for SWAP:
-    //   negedge ? writes new value (Data_In) to memory
-    //   posedge ? reads OLD value that was there before negedge
-    // This correctly implements atomic exchange behavior
+												   
     always @(negedge Clk) begin
         if (W)
             MEM[Address[9:2]] <= Data_In;

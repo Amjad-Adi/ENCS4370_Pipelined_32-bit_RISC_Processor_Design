@@ -20,11 +20,11 @@
 
   					   
 module SyncRegister #(
-    parameter W = 32        // Bit width (default 32)
+    parameter W = 32        
 )(
-    input              clk, // Clock — latch on posedge
-    input      [W-1:0] in,  // Data input
-    output reg [W-1:0] out  // Registered output
+    input              clk, 
+    input      [W-1:0] in,  
+    output reg [W-1:0] out  
 );
 
 initial

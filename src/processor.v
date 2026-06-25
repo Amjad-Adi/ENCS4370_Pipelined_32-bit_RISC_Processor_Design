@@ -29,9 +29,7 @@ SyncRegisterEn #(32) IFID_Instruction(.clk(CLK), .en(~Stall), .in(Instruction_Mu
 
 SyncRegisterEn #(32) IFID_PC(.clk(CLK), .en(~Stall), .in(Current_PC), .out(IFID_PC_Out));
 
-SyncRegisterEn #(32) IFID_PCPlus1(.clk(CLK), .en(~Stall), .in(PCPlus1), .out(IFID_PCPlus1_Out));
-
-// -- ID Stage ------------------------------------------------------------------
+SyncRegisterEn #(32) IFID_PCPlus1(.clk(CLK), .en(~Stall), .in(PCPlus1), .out(IFID_PCPlus1_Out));	 
 
 wire [5:0]  ID_opcode    = IFID_Instruction_Out[31:26];
 wire [3:0]  ID_inst1     = IFID_Instruction_Out[25:22];
@@ -59,8 +57,7 @@ wire [1:0] ID_WBData = CtrlSignals_Muxed[1:0];
 
 wire [31:0] ID_ForwardA_Out;
 wire [31:0] ID_ForwardB_Out;
-
-// FIX: declare EX_ALU_Result and WB_SelectedData before use in forward muxes
+																			 
 wire [31:0] EX_ALU_Result;
 wire [31:0] WB_SelectedData;
 
@@ -73,11 +70,7 @@ Mux2to1 #(.WIDTH(4)) RegDstMux(.Input0(ID_inst1), .Input1(4'b1110), .Select(ID_R
 Mux2to1 #(.WIDTH(4)) RegSrcMux(.Input0(ID_inst3), .Input1(ID_inst1), .Select(ID_RegSrc), .OutputData(ID_Rs2));
 
 RegisterFile Register_File(.Clk(CLK), .W(WB_RegWr), .RA(ID_Rs1), .RB(ID_Rs2), .RW(WB_Rd), .BUSW(BusW), .BUSA(ID_BusA), .BUSB(ID_BusB));
-
-// Forward muxes in ID stage — used for branch comparator and JR address
-// Input1 = EX/MEM ALU result (1 cycle old)
-// Input2 = WB_SelectedData from MEM/WB mux (2 cycles old)
-// Input3 = BusW (written back — 3 cycles old, same as register file)
+																	   
 Mux4to1 #(32) ForwardAMux(.Input0(ID_BusA), .Input1(EX_ALU_Result), .Input2(WB_SelectedData), .Input3(BusW), .Select(ForwardA), .OutputData(ID_ForwardA_Out));
 
 Mux4to1 #(32) ForwardBMux(.Input0(ID_BusB), .Input1(EX_ALU_Result), .Input2(WB_SelectedData), .Input3(BusW), .Select(ForwardB), .OutputData(ID_ForwardB_Out));
@@ -95,15 +88,12 @@ Comparator comparator(.A(ID_ForwardA_Out), .B(ID_ForwardB_Out), .Equal(EQ));
 PCControl pc_ctrl(.opcode(ID_opcode), .Equal(EQ), .PCSrc(PCSrc), .Kill(kill_instruction));
 
 ForwardingUnit forwarding_unit(.RA(ID_Rs1), .RB(ID_Rs2), .Rd2(EX_Rd), .Rd3(MEM_Rd), .Rd4(WB_Rd), .EX_RegWr(EX_RegWr), .MEM_RegWr(MEM_RegWr), .WB_RegWr(WB_RegWr), .EX_MemRd(EX_MemRd), .ForwardA(ForwardA), .ForwardB(ForwardB), .Stall(Stall));
-
-// -- ID/EX Pipeline Registers --------------------------------------------------
-
+																				   
 wire [9:0]  IDEX_CtrlSignals_Out;
 wire [31:0] IDEX_BusA_Out, IDEX_BusB_Out, IDEX_ExtImm_Out, IDEX_PCPlus1_Out;
 wire [3:0]  IDEX_Rd_Out, IDEX_Rs1_Out, IDEX_Rs2_Out;
 
-SyncRegister #(10) IDEX_CtrlSignals(.clk(CLK), .in(CtrlSignals_Muxed),    .out(IDEX_CtrlSignals_Out));
-// FIX: save forwarded values into pipeline register so EX always has correct operands
+SyncRegister #(10) IDEX_CtrlSignals(.clk(CLK), .in(CtrlSignals_Muxed),    .out(IDEX_CtrlSignals_Out));	 
 SyncRegister #(32) IDEX_BusA       (.clk(CLK), .in(ID_ForwardA_Out),      .out(IDEX_BusA_Out));
 SyncRegister #(32) IDEX_BusB       (.clk(CLK), .in(ID_ForwardB_Out),      .out(IDEX_BusB_Out));
 SyncRegister #(32) IDEX_ExtImm     (.clk(CLK), .in(ID_ExtendedImmediate), .out(IDEX_ExtImm_Out));
@@ -115,21 +105,18 @@ SyncRegister #(4)  IDEX_Rs2        (.clk(CLK), .in(ID_Rs2),               .out(I
 assign EX_Rd    = IDEX_Rd_Out;
 assign EX_RegWr = IDEX_CtrlSignals_Out[5];
 assign EX_MemRd = IDEX_CtrlSignals_Out[3];
-
-// -- EX Stage ------------------------------------------------------------------
-
+																				  
 wire [2:0]  EX_ALUOp  = IDEX_CtrlSignals_Out[9:7];
 wire        EX_ALUSrc = IDEX_CtrlSignals_Out[4];
 wire        EX_MemWr  = IDEX_CtrlSignals_Out[2];
 wire [1:0]  EX_WBData = IDEX_CtrlSignals_Out[1:0];
 wire [31:0] EX_ALUOperandB;
-
-// ALUSrc selects between forwarded BusB and extended immediate
+																
 Mux2to1 #(.WIDTH(32)) ALUSrcMux(.Input0(IDEX_BusB_Out), .Input1(IDEX_ExtImm_Out), .Select(EX_ALUSrc), .OutputData(EX_ALUOperandB));
 
 ALU alu(.OperandA(IDEX_BusA_Out), .OperandB(EX_ALUOperandB), .ALUCtrl(EX_ALUOp), .ALUResult(EX_ALU_Result));
 
-// -- EX/MEM Pipeline Registers -------------------------------------------------
+
 
 wire [4:0]  EXMEM_CtrlPacked_In  = {EX_RegWr, EX_MemRd, EX_MemWr, EX_WBData};
 wire [4:0]  EXMEM_CtrlPacked_Out;
@@ -137,9 +124,7 @@ wire [31:0] EXMEM_R_Out, EXMEM_D_Out, EXMEM_PCPlus1_Out;
 wire [3:0]  EXMEM_Rd3_Out;
 
 SyncRegister #(5)  EXMEM_CtrlSignals(.clk(CLK), .in(EXMEM_CtrlPacked_In),  .out(EXMEM_CtrlPacked_Out));
-SyncRegister #(32) EXMEM_R         (.clk(CLK), .in(EX_ALU_Result),         .out(EXMEM_R_Out));
-// FIX: save forwarded BusB (IDEX_BusB_Out already has forwarded value from ID stage)
-// This ensures SW/SWAP store data is the correctly forwarded register value
+SyncRegister #(32) EXMEM_R         (.clk(CLK), .in(EX_ALU_Result),         .out(EXMEM_R_Out));	 
 SyncRegister #(32) EXMEM_D         (.clk(CLK), .in(IDEX_BusB_Out),         .out(EXMEM_D_Out));
 SyncRegister #(32) EXMEM_PCPlus1   (.clk(CLK), .in(IDEX_PCPlus1_Out),      .out(EXMEM_PCPlus1_Out));
 SyncRegister #(4)  EXMEM_Rd3       (.clk(CLK), .in(IDEX_Rd_Out),           .out(EXMEM_Rd3_Out));
@@ -147,20 +132,15 @@ SyncRegister #(4)  EXMEM_Rd3       (.clk(CLK), .in(IDEX_Rd_Out),           .out(
 assign MEM_Rd    = EXMEM_Rd3_Out;
 assign MEM_RegWr = EXMEM_CtrlPacked_Out[4];
 assign ALU_Result = EXMEM_R_Out;
-
-// -- MEM Stage -----------------------------------------------------------------
-
+																				   
 wire MEM_MemRd  = EXMEM_CtrlPacked_Out[3];
 wire MEM_MemWr  = EXMEM_CtrlPacked_Out[2];
 wire [1:0] MEM_WBSelector = EXMEM_CtrlPacked_Out[1:0];
-
-// negedge write + posedge read: SWAP writes on negedge, reads old value on posedge
+																					 
 DataMemory Data_Memory(.Clk(CLK), .Address(EXMEM_R_Out), .Data_In(EXMEM_D_Out), .W(MEM_MemWr), .R(MEM_MemRd), .Data_Out(Data_Out));
-
-// WB data mux selects: ALU result, memory read, PC+1 (JAL), or zero (CLR)
+																		 
 Mux4to1 MEM_WbdataMux(.Input0(EXMEM_R_Out), .Input1(Data_Out), .Input2(EXMEM_PCPlus1_Out), .Input3(32'b0), .Select(MEM_WBSelector), .OutputData(WB_SelectedData));
 
-// -- MEM/WB Pipeline Registers -------------------------------------------------
 
 wire [31:0] MEMWB_Data_Out;
 wire [3:0]  MEMWB_Rd_Out;
