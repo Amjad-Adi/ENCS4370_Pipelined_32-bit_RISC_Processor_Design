@@ -13,11 +13,11 @@ module MainandALUControl(
 
     wire A4 = opcode[4]; wire A3 = opcode[3]; wire A2 = opcode[2]; wire A1 = opcode[1]; wire A0 = opcode[0];
 
-    assign RegDst          = A4;
+    assign RegDst          = (A4 & ~A3 & ~A2);
     assign RegSrc          = (~A4 & A3) | (A4 & ~A3 & ~A2);
-    assign ExtOp           = A4 | (A2 & A1) | (A1 ^ A0);
-    assign RegWrite        = (~A4 & ~A3) | (~A4 & ~A1 & ~A0) | (A2 ^ A1) | (A1 & A0);
-    assign ALUSrc          = A3;
+    assign ExtOp           = A4 | (A2 & A1) | (A1 ^ A0);																	
+	assign RegWrite = (~A4 & ~A3) | (~A4 & A3 & ~A2 & (A1 | ~A0))| (~A4 & A3 &  A2 & (~A1 | A0))| (A4 & ~A3 & ~A2 & A1 & A0);   
+    assign ALUSrc          = A3;						  				   
     assign MemRead         = A3 & A2 & A0;
     assign MemWrite        = A3 & A2 & A1;
     assign WBDataSelect[1] = (~A4 & A3 & ~A2 & ~A1) | (A4 & ~A3 & ~A2);

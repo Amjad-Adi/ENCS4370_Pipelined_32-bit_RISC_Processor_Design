@@ -1,4 +1,3 @@
-`timescale 1ns/1ps
 
 module Processor_TB;
 
@@ -17,77 +16,95 @@ always #5 clk = ~clk;
 //----------------------------------------------------
 always @(negedge clk) begin
 
-    $display("==================================================");
-    $display("PC=%0d  NextPC=%0d", uut.Current_PC, uut.Next_PC);
-    $display("Instruction=%032b", uut.Instruction);
+    $display("\n========================================================");
+    $display("Cycle @ %0t", $time);
 
-    $display("Opcode=%06b inst1=%0d Rs1=%0d inst3=%0d Rs2=%0d Rd=%0d",
-        uut.opcode,
-        uut.inst1,
-        uut.Rs1,
-        uut.inst3,
-        uut.Rs2,
-        uut.Rd);
+    //---------------- IF ----------------
+    $display("\n[IF]");
+    $display("PC          = %0d", uut.Current_PC);
+    $display("NextPC      = %0d", uut.Next_PC);
+    $display("Instruction = %032b", uut.Instruction);
 
-    $display("RegDst=%b RegSrc=%b ALUSrc=%b RegWr=%b ALUOp=%b",
-        uut.RegDst,
-        uut.RegSrc,
-        uut.ALUSrc,
-        uut.RegWr,
-        uut.ALUOp);
+    //---------------- ID ----------------
+    $display("\n[ID]");
+    $display("Opcode      = %06b", uut.ID_opcode);
+    $display("Rs1         = %0d", uut.ID_Rs1);
+    $display("Rs2         = %0d", uut.ID_Rs2);
+    $display("Rd          = %0d", uut.ID_Rd);
 
-    $display("MemRd=%b MemWr=%b WBData=%02b",
-        uut.MemRd,
-        uut.MemWr,
-        uut.WBData);
+    $display("BusA        = %0d", uut.ID_BusA);
+    $display("BusB        = %0d", uut.ID_BusB);
 
-    $display("PCSrc=%02b EQ=%b",
-        uut.PCSrc,
-        uut.EQ);
+    $display("ForwardA    = %02b", uut.ForwardA);
+    $display("ForwardB    = %02b", uut.ForwardB);
+    $display("Fwd BusA    = %0d", uut.ID_ForwardA_Out);
+    $display("Fwd BusB    = %0d", uut.ID_ForwardB_Out);
 
-    $display("BUSA=%0d BUSB=%0d",
-        uut.BusA,
-        uut.BusB);
+    $display("PCSrc       = %02b", uut.PCSrc);
+    $display("EQ          = %b", uut.EQ);
+    $display("Stall       = %b", uut.Stall);
 
-    $display("ALUResult=%0d", uut.ALU_Result);
-    $display("BUSW=%0d", uut.BusW);
+    // NEW
+    $display("ID_WBData   = %02b", uut.ID_WBData);
 
-    $display("DMEM[0]=%0d", uut.Data_Memory.MEM[0]);
+    //---------------- EX ----------------
+    $display("\n[EX]");
+    $display("ALUOp       = %03b", uut.EX_ALUOp);
+    $display("OperandA    = %0d", uut.IDEX_BusA_Out);
+    $display("OperandB    = %0d", uut.EX_ALUOperandB);
+    $display("ALUResult   = %0d", uut.EX_ALU_Result);
 
-    $display("--------------------------------------------");
+    // NEW
+    $display("EX_WBData   = %02b", uut.EX_WBData);
 
+    //---------------- MEM ----------------
+    $display("\n[MEM]");
+    $display("ALUResult   = %0d", uut.EXMEM_R_Out);
+    $display("MemData     = %0d", uut.Data_Out);
+
+    // NEW
+    $display("EXMEM_Ctrl  = %05b", uut.EXMEM_CtrlPacked_Out);
+
+    $display("WB_Select   = %02b", uut.MEM_WBSelector);
+    $display("WB_Data     = %0d", uut.WB_SelectedData);
+
+    //---------------- WB ----------------
+    $display("\n[WB]");
+    $display("BusW        = %0d", uut.BusW);
+    $display("RegWrite    = %b", uut.WB_RegWr);
+    $display("WriteReg    = %0d", uut.WB_Rd);
+
+    //---------------- Memory ----------------
+    $display("\n[Memory]");
+    $display("DMEM[0]     = %0d", uut.Data_Memory.MEM[0]);
+
+    //---------------- Registers ----------------
+    $display("\n[Registers]");
     $display("R0=%0d  R1=%0d  R2=%0d  R3=%0d",
-        uut.Register_File.REG[0],
-        uut.Register_File.REG[1],
-        uut.Register_File.REG[2],
-        uut.Register_File.REG[3]);
+        uut.Register_File.REG[0], uut.Register_File.REG[1],
+        uut.Register_File.REG[2], uut.Register_File.REG[3]);
 
     $display("R4=%0d  R5=%0d  R6=%0d  R7=%0d",
-        uut.Register_File.REG[4],
-        uut.Register_File.REG[5],
-        uut.Register_File.REG[6],
-        uut.Register_File.REG[7]);
+        uut.Register_File.REG[4], uut.Register_File.REG[5],
+        uut.Register_File.REG[6], uut.Register_File.REG[7]);
 
     $display("R8=%0d  R9=%0d  R10=%0d  R11=%0d",
-        uut.Register_File.REG[8],
-        uut.Register_File.REG[9],
-        uut.Register_File.REG[10],
-        uut.Register_File.REG[11]);
+        uut.Register_File.REG[8], uut.Register_File.REG[9],
+        uut.Register_File.REG[10], uut.Register_File.REG[11]);
 
     $display("R12=%0d R13=%0d R14=%0d R15=%0d",
-        uut.Register_File.REG[12],
-        uut.Register_File.REG[13],
-        uut.Register_File.REG[14],
-        uut.Register_File.REG[15]);
+        uut.Register_File.REG[12], uut.Register_File.REG[13],
+        uut.Register_File.REG[14], uut.Register_File.REG[15]);
 
-    $display("==================================================");
+    $display("========================================================");
+
 end
  initial begin
 
     clk = 0;	
 
     // Initialize Register File	  
-	  #1;
+      #1;
     uut.Register_File.REG[0]  = 0;
     uut.Register_File.REG[1]  = 8;
     uut.Register_File.REG[2]  = 4;
@@ -111,10 +128,15 @@ end
     // Keep reset asserted for two cycles
     repeat(2) @(posedge clk);
 				
-
-    // Run processor
-    repeat(40)
-        @(negedge clk);
+    // ---------------------------------------------------------
+    // FIX: Wait for the program to finish instead of a hard limit
+    // ---------------------------------------------------------
+    // Wait until the PC reaches the final halt instruction at ADDR 65
+    wait (uut.Current_PC == 77);
+    
+    // Give the pipeline 5 extra cycles to let the final instructions 
+    // propagate through the EX, MEM, and WB stages
+    repeat(5) @(negedge clk);
 
     $display("");
     $display("================ FINAL STATE ================");

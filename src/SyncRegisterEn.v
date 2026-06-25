@@ -18,23 +18,20 @@
 //
 //-----------------------------------------------------------------------------
 
-`timescale 1ps / 1ps
 
-
-module SyncRegisterEn #(
-    parameter W = 32        // Bit width (default 32)
-)(
-    input              clk, // Clock — latch on posedge
-    input              en,  // Enable: 1=latch, 0=hold (disable/stall)
-    input      [W-1:0] in,  // Data input
-    output reg [W-1:0] out  // Registered output
+module SyncRegisterEn #(parameter WIDTH=32)
+(
+    input clk,
+    input en,
+    input [WIDTH-1:0] in,
+    output reg [WIDTH-1:0] out
 );
- 
-    always @(posedge clk) begin
-        if (en) begin
-            out <= in;      // Normal: latch new value
-        end
-        // else: hold current value (stall)
-    end
- 
+
+initial
+    out = 0;
+
+always @(negedge clk) begin
+    if(en)
+        out <= in;
+	end
 endmodule

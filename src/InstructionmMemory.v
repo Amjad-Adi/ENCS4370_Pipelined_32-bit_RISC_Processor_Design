@@ -8,7 +8,7 @@ module InstructionMemory (
     reg [31:0] memory_array [0:1023];
 
     initial begin
-        $readmemb("test.bin", memory_array);
+        $readmemb("hazard_test.bin", memory_array);
     end
 
     assign Instruction = memory_array[Address];

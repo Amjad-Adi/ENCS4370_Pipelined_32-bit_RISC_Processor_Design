@@ -18,7 +18,6 @@
 //
 //-----------------------------------------------------------------------------
 
-`timescale 1ps / 1ps
   					   
 module SyncRegister #(
     parameter W = 32        // Bit width (default 32)
@@ -27,8 +26,10 @@ module SyncRegister #(
     input      [W-1:0] in,  // Data input
     output reg [W-1:0] out  // Registered output
 );
- 
-    always @(posedge clk) begin
+
+initial
+    out = 0; 
+    always @(negedge clk) begin
         out <= in;
     end
  
