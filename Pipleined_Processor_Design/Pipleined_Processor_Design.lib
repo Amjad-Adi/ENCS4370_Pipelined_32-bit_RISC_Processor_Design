@@ -1,0 +1,396 @@
+timestamp=1782589971600
+
+[~A]
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/ALU.v=0*1634149*1634834
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/ALUControl.v=0*1645603*1646295
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder.v_ALU.v_Comparator.v_DataMemory.v_InstructionmMemory.v_Mux2to1.v_RegisterFile.v_processor.v_PCControl.v_MainandALUControl.v_Mux4to1.v_tb_processor.v_Extender.v_ForwardingUnit.v_SyncRegister.v_SyncRegisterEn.v=0*2935417*2943400
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder.v_ALU.v_Comparator.v_DataMemory.v_InstructionmMemory.v_Mux2to1.v_RegisterFile.v_processor.v_PCControl.v_MainandALUControl.v_Mux4to1.v_tb_processor.v_Extender.v_ForwardingUnit.v_SyncRegister.v_SyncRegisterEn.v_Processor_Functionallity_TB.v=0*3389098*3396903
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_EX_MEM_Register.v_ID_EX_Register.v_IF_ID_Register.v_InstructionmMemory.v_MEM_WB_Register.v_Mux2to1.v_RegisterFile.v_processor.v_pc_register.v_PCControl.v_MainandALUControl.v_Mux4to1.v_tb_processor.v_Detecting_Raw_Hazard_After_Load.v_Extender.v_ForwardingUnit.v_PC_Control_PipelinedJumpAndBranch.v=0*2288549*2296867
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_InstructionmMemory.v_Mux2to1.v_RegisterFile.v_processor.v_PCControl.v_MainandALUControl.v_Mux4to1.v_tb_processor.v_Extender.v_ForwardingUnit.v_SyncRegister.v_SyncRegisterEn.v=0*2687298*2695510
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder32bit.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_EX_MEM_Register.v_Extender.v_ID_EX_Register.v_IF_ID_Register.v_InstructionmMemory.v_MEM_WB_Register.v_Mux2to1.v_RegisterFile.v_ExtenderTestBench.v_tb_Adder32bit.v_tb_Comparator.v_tb_DataMemoryPipeline.v_tb_EX_MEM_Register.v_tb_ID_EX_Register.v_tb_IF_ID_Register.v_tb_MEM_WB_Register.v_tb_Mux2to1_32bit.v_tb_RegisterFile.v_processor.v_pc_register.v_ALUControl.v_PCControl.v_MainControl.v=0*8830*23692
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder32bit.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_EX_MEM_Register.v_Extender.v_ID_EX_Register.v_IF_ID_Register.v_InstructionmMemory.v_MEM_WB_Register.v_Mux2to1.v_RegisterFile.v_ExtenderTestBench.v_tb_Adder32bit.v_tb_Comparator.v_tb_DataMemoryPipeline.v_tb_EX_MEM_Register.v_tb_ID_EX_Register.v_tb_IF_ID_Register.v_tb_MEM_WB_Register.v_tb_Mux2to1_32bit.v_tb_RegisterFile.v_processor.v_pc_register.v_ALUControl.v_PCControl.v_MainControl.v_Mux4to1.v=0*574031*589095
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder32bit.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_EX_MEM_Register.v_Extender.v_ID_EX_Register.v_IF_ID_Register.v_InstructionmMemory.v_MEM_WB_Register.v_Mux2to1.v_RegisterFile.v_ExtenderTestBench.v_tb_Adder32bit.v_tb_Comparator.v_tb_DataMemoryPipeline.v_tb_EX_MEM_Register.v_tb_ID_EX_Register.v_tb_IF_ID_Register.v_tb_MEM_WB_Register.v_tb_Mux2to1_32bit.v_tb_RegisterFile.v_processor.v_pc_register.v_ALUControl.v_PCControl.v_MainControl.v_Mux4to1.v_tb_processor.v=0*865218*880457
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder32bit.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_EX_MEM_Register.v_Extender.v_ID_EX_Register.v_IF_ID_Register.v_InstructionmMemory.v_MEM_WB_Register.v_Mux2to1.v_RegisterFile.v_ExtenderTestBench.v_tb_Adder32bit.v_tb_Comparator.v_tb_DataMemoryPipeline.v_tb_EX_MEM_Register.v_tb_ID_EX_Register.v_tb_IF_ID_Register.v_tb_MEM_WB_Register.v_tb_Mux2to1_32bit.v_tb_RegisterFile.v_processor.v_pc_register.v_ALUControl.v_PCControl.v_MainControl.v_Mux4to1_32bit.v=0*141187*156225
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Adder32bit.v_ALU.v_Comparator.v_Datamemory.v_DataMemoryPipeline.v_EX_MEM_Register.v_Extender18bit.v_ID_EX_Register.v_IF_ID_Register.v_InstructionmMemory.v_MEM_WB_Register.v_Mux2to1.v_RegisterFile.v_ExtenderTestBench.v_tb_Adder32bit.v_tb_Comparator.v_tb_DataMemoryPipeline.v_tb_EX_MEM_Register.v_tb_ID_EX_Register.v_tb_IF_ID_Register.v_tb_MEM_WB_Register.v_tb_Mux2to1_32bit.v_tb_RegisterFile.v_processor.v_pc_register.v_ALUControl.v_PCControl.v_MainControl.v_Mux4to1.v_tb_processor.v_Extender26bit.v=0*2179986*2196350
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/DataMemory.v_Adder.v_ALU.v_Comparator.v_InstructionmMemory.v_Mux2to1.v_RegisterFile.v_processor.v_PCControl.v_MainandALUControl.v_Mux4to1.v_tb_processor.v_Extender.v_ForwardingUnit.v_SyncRegister.v_SyncRegisterEn.v=0*2701670*2709637
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Datamemory.v=0*2806102*2806842
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/InstructionmMemory.v=0*3296286*3296938
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/MainControl.v=0*1643577*1644350
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/MainControl.v_processor.v=0*1694094*1696048
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/MainandALUControl.v_InstructionmMemory.v=0*2879036*2880221
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Mux2to1.v=0*1802870*1803447
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/Mux4to1_32bit.v=0*25750*26413
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/PCControl.v_ALUControl.v_MainControl.v_processor.v=0*1737816*1740003
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/SyncRegisterEn.v=0*2680630*2681246
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/processor.v=0*2616981*2620505
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/processor.v_tb_processor.v=0*1628134*1630729
+C:/Users/hp/Desktop/Active HDL/Computer Architectuire/Pipleined_Processor_Design/Pipleined_Processor_Design/src/tb_processor.v=0*2911746*2913593
+LastVerilogToplevel=Processor_Functionallity_TB
+ModifyID=216
+Version=74
+
+[~MFT]
+0=23|0Pipleined_Processor_Design.mgf|3396903|2017198
+1=38|1Pipleined_Processor_Design.mgf|10488961|10381887
+3=76|3Pipleined_Processor_Design.mgf|9504688|9399499
+
+[$root]
+A/$root=22|||1*10441041
+BinW64/$root=3*9472088
+SLP=3*9472203
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|c73a565f2ade592f8ac1c68f484c921645f9276c8c7141d8a25f4b4d3914e199
+
+[ALU]
+A/ALU=22|../src/ALU.v|1|1*10442776
+BinW64/ALU=3*9473261
+R=../src/ALU.v|1
+SLP=3*9474320
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|b3eb40c25b2a3c0379c7730185183eecb2b23dd4c6b751d41e6cfdf4ac0643f7
+
+[ALUControl]
+A/ALUControl=22|../src/ALUControl.v|1|1*6241971
+BinW64/ALUControl=3*6687698
+R=../src/ALUControl.v|1
+SLP=3*6688786
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|166c0247fa823b5f10f01410d707d18f23967295dfaad723a6f809d06492bcf6e6d0d61fcad0ea101630cab514d93125
+
+[Adder]
+A/Adder=22|../src/Adder.v|24|1*10441607
+BinW64/Adder=3*9472271
+R=../src/Adder.v|24
+SLP=3*9473094
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|7918c8fe9f8d9b8c180503b46e5a4b29314fc3d1083ce0f4ba4dd6de5d1ec9c4
+
+[Adder32bit]
+A/Adder32bit=22|../src/Adder32bit.v|24|1*6171488
+BinW64/Adder32bit=3*6609850
+R=../src/Adder32bit.v|24
+SLP=3*6610246
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|50de15c1a3f2da6ea493f91a861be1e0ec321bfc9de8764b1a1454e6f5c5ae0962e48c3ba2a1c777b4edc4220c592fa7
+
+[Comparator]
+A/Comparator=22|../src/Comparator.v|24|1*10443966
+BinW64/Comparator=3*9474832
+R=../src/Comparator.v|24
+SLP=3*9475305
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|6b0cd2d20a0d9c2598236818b21170af6157a78d2114de38b45ca997313e64c7cf34b1f9ff51c83d6fd3613cd3e9c3d2
+
+[DataMemory]
+A/DataMemory=22|../src/DataMemory.v|3|1*10444913
+BinW64/DataMemory=3*9475502
+R=../src/DataMemory.v|3
+SLP=3*9476455
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|ab5b04ae54b0797c38b8547f936232d99426d89c50ff4379bf89bab4c639842d0c0671eb4217da731fb44a83c3050bc9
+
+[DataMemory_Pipeline]
+A/DataMemory_Pipeline=22|../src/DataMemoryPipeline.v|23|1*8000513
+BinW64/DataMemory_Pipeline=3*7823398
+R=../src/DataMemoryPipeline.v|23
+SLP=3*7824553
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|c523ff849c200dea87cc071e494303bebeb5dd353b1a393207771f54714f5776055eb5671c3584a8451a7cbd9ebe1bc5
+
+[Decoder4to16]
+A/Decoder4to16=22|../src/RegisterFile.v|23|1*6192948
+BinW64/Decoder4to16=3*6626380
+R=../src/RegisterFile.v|23
+SLP=3*6626954
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|d190dafda088abe2ffc53717fca1e4c1f929056a9a318b133bd549700dae5fbce9db8ec2bd2d81538c850cbc461d09dc
+
+[EX_MEM_Register]
+A/EX_MEM_Register=22|../src/EX_MEM_Register.v|24|1*6523093
+BinW64/EX_MEM_Register=3*6900425
+R=../src/EX_MEM_Register.v|24
+SLP=3*6901557
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|100922427b589896e0c1da31bec68ba6313c6b828df9025ce288b6ef2186c72b9f580096206e9e3146a87535c25ee415
+
+[Extender]
+A/Extender=22|../src/Extender.v|2|1*10480545
+BinW64/Extender=3*9491234
+R=../src/Extender.v|2
+SLP=3*9493727
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|a261af10a9c686e7aecc5c2773f178128e9d9588c4ff5cca4594dc3e49d761f7191aaa35f6ede05309870cc951e9e8c0
+
+[Extender18bit]
+A/Extender18bit=22|../src/Extender18bit.v|3|1*6181586
+BinW64/Extender18bit=3*6617922
+R=../src/Extender18bit.v|3
+SLP=3*6618525
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|387784e18893a6f4d01416374f86ac800f1fee0b1b772a8d9f6097b6c1598a7278be9194783ed54b420a20e3fa277a1f
+
+[Extender26bit]
+A/Extender26bit=22|../src/Extender26bit.v|3|1*6245655
+BinW64/Extender26bit=3*6690712
+R=../src/Extender26bit.v|3
+SLP=3*6691096
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|f3b144893f7ddeb86dcc483ce613373fc1338b38efa7ea312105fdfdff3ff0ff91539c89ee577b9379212b4e7f61f3eb
+
+[ForwardingUnit]
+A/ForwardingUnit=22|../src/ForwardingUnit.v|24|1*10483805
+BinW64/ForwardingUnit=3*9495451
+R=../src/ForwardingUnit.v|24
+SLP=3*9496633
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|d86ca2367e69730b0f96301eefc4e5bc897d4648d1a1f3f109b6923b61bd98d5eba060cd71200276da3349ba21ea6f7c
+
+[ID_EX_Register]
+A/ID_EX_Register=22|../src/ID_EX_Register.v|24|1*6526243
+BinW64/ID_EX_Register=3*6902376
+R=../src/ID_EX_Register.v|24
+SLP=3*6903849
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|4ae3dc85b3cac34de58821e1a9163464a537902d0322bc158b3b39327b83da7f07bde94fcc32e7f4233a8c45bee09ca8
+
+[IF_ID_Register]
+A/IF_ID_Register=22|../src/IF_ID_Register.v|24|1*6530494
+BinW64/IF_ID_Register=3*6905010
+R=../src/IF_ID_Register.v|24
+SLP=3*6905604
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|4a83785a60559ce9776c404d0e36efacf296b4d52b63f562107f89b9549cda2dfffd601123da6853b413099868f65e97
+
+[InstructionMemory]
+A/InstructionMemory=22|../src/InstructionmMemory.v|3|1*10446678
+BinW64/InstructionMemory=3*9476955
+R=../src/InstructionmMemory.v|3
+SLP=3*9477610
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|b86a443a1d82ec234d09f8a4c7b8cd6b46404b5c54a2301d05949f8e3043a720bf81b865d0ed70066e74d66e84a9816d
+
+[MEM_WB_Register]
+A/MEM_WB_Register=22|../src/MEM_WB_Register.v|23|1*6533303
+BinW64/MEM_WB_Register=3*6906907
+R=../src/MEM_WB_Register.v|23
+SLP=3*6907755
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|60e9ebefbef2c6dd5a8b26dfd5298d99d048b77817313c776c88842b0d5afc5bbd913bfaa03643151f9476518147f007
+
+[MainControl]
+A/MainControl=22|../src/MainControl.v|1|1*6239045
+BinW64/MainControl=3*6685627
+R=../src/MainControl.v|1
+SLP=3*6686973
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|683c4dda9a4a3d034d0fc27881def321a24f5079c875dae367c5dedfc8a4d449238fb7613dcd26723f5325d59e4c670a
+
+[MainandALUControl]
+A/MainandALUControl=22|../src/MainandALUControl.v|1|1*10477152
+BinW64/MainandALUControl=3*9488155
+R=../src/MainandALUControl.v|1
+SLP=3*9489984
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|d7f6998da51bfd206bafd5b15303cf7a228b21474fcfa8afee3a79eac0bb1a87290b7f7481b8128d6dabe7c817b8b019
+
+[Mux16to1_32bit]
+A/Mux16to1_32bit=22|../src/RegisterFile.v|26|1*10449216
+BinW64/Mux16to1_32bit=3*9479560
+R=../src/RegisterFile.v|26
+SLP=3*9480585
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|af52dacccb540c11fb8ed7a20dd00a9046d8725cc44ec3269d9c1fb0cc05f94b970d826796016845b340f6f13e1ab793
+
+[Mux2to1]
+A/Mux2to1=22|../src/Mux2to1.v|23|1*10447959
+BinW64/Mux2to1=3*9477897
+R=../src/Mux2to1.v|23
+SLP=3*9479372
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|4f17c576570e3eb26e9775041a5ff12a26527262ddaa47cb266f3a3c4d9b973a135e6118e329e96d1d9ebe532e57ffee
+
+[Mux2to1_32bit]
+A/Mux2to1_32bit=22|../src/Mux2to1.v|23|1*330322
+BinW64/Mux2to1_32bit=3*335993
+R=../src/Mux2to1.v|23
+SLP=3*336446
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|a46aafdd087e2c749713485489a3480e34f38d7da71cce33420a7e272de3fd8dffd96624d4b16e54f4091b18cbde4cc2
+
+[Mux4to1]
+A/Mux4to1=22|../src/Mux4to1.v|3|1*10473596
+BinW64/Mux4to1=3*9486291
+R=../src/Mux4to1.v|3
+SLP=3*9486774
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|54f4bfb026af2e4fd17dfcfcbaf6ff0f26527262ddaa47cb266f3a3c4d9b973aaf6043a80d88db26f697a0c9b1a5d7b0
+
+[Mux4to1_32bit]
+A/Mux4to1_32bit=22|../src/Mux4to1_32bit.v|3|1*375206
+BinW64/Mux4to1_32bit=3*394937
+R=../src/Mux4to1_32bit.v|3
+SLP=3*395060
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|37e7d4f3c07f2078561cb8ae290ef944b4fac96b0b3c9ebeef0c8223d719ede69410c5c7b2ee704873e711c3b6e2dd9a
+
+[PCControl]
+A/PCControl=22|../src/PCControl.v|1|1*10481809
+BinW64/PCControl=3*9494024
+R=../src/PCControl.v|1
+SLP=3*9494974
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|922c9ee36eaac476ce2ec3c1495eb93974b932a99aa81657982051486f806f2665b400267f9282980d46ee6ec0734598
+
+[PC_Control_For_Pipelined_Jump_And_Branch]
+A/PC_Control_For_Pipelined_Jump_And_Branch=22|../src/Detecting_Raw_Hazard_After_Load.v|23|1*6562716
+BinW64/PC_Control_For_Pipelined_Jump_And_Branch=3*6928214
+R=../src/Detecting_Raw_Hazard_After_Load.v|23
+SLP=3*6928988
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|ae4a26b0eead25d69646dc8521f349cae014702375484eccb66985a4c41590a90798d289fc3700840116a2dc93bef51289c4ee2df56a69af0298146f967447046d407737435b258d695156872d775e88
+
+[PC_Control_PipelinedJumpAndBranch]
+A/PC_Control_PipelinedJumpAndBranch=22|../src/PC_Control_PipelinedJumpAndBranch.v|27|1*6566268
+BinW64/PC_Control_PipelinedJumpAndBranch=3*6930941
+R=../src/PC_Control_PipelinedJumpAndBranch.v|27
+SLP=3*6931708
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|28b6d2dd926e1a551de2522adab3baf49968de8afc9598e2db76d77907740728c8d16df894d9e59bfbc1816b03dc83819cfdc2e1e7f1ed0e4fffc802b79f10c8
+
+[Processor_Functionallity_TB]
+A/Processor_Functionallity_TB=22|../src/Processor_Functionallity_TB.v|3|1*10488961
+BinW64/Processor_Functionallity_TB=3*9502535
+R=../src/Processor_Functionallity_TB.v|3
+SLP=3*9504688
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|40435e58ea240e54d6f3528d7ee2c21cf29cc16f34d26fafa0924536527058a7fa45b0b5d6079832113a53b535f47fe2a1c8d6c8cd675f1225130fbc2e47850b
+
+[Processor_TB]
+A/Processor_TB=22|../src/tb_processor.v|2|1*10486991
+BinW64/Processor_TB=3*9498405
+R=../src/tb_processor.v|2
+SLP=3*9500610
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|b0fe5638fa2873e317e16e3da4b5435a7bc1acf137902b23beb6fa31717271221563920e1ca02ecc85e703d857f16f75
+
+[RegisterFile]
+A/RegisterFile=22|../src/RegisterFile.v|58|1*10451566
+BinW64/RegisterFile=3*9481349
+R=../src/RegisterFile.v|58
+SLP=3*9482211
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|22f74543ade67d85359ca455f1aa161036d96cbaa54bbfe1fa4f47ec71d764299128159aee2c8650a838d78731374581
+
+[SyncRegister]
+A/SyncRegister=22|../src/SyncRegister.v|22|1*10485663
+BinW64/SyncRegister=3*9497326
+R=../src/SyncRegister.v|22
+SLP=3*9498149
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|930d65c4a12818b32d0fe77c0ffd7e261d73e5f15ed347f424790d28eba2ae7d312c0785ff0e8eb7e39048843502d5fd
+
+[SyncRegisterEn]
+A/SyncRegisterEn=22|../src/SyncRegisterEn.v|22|1*10475720
+BinW64/SyncRegisterEn=3*9487006
+R=../src/SyncRegisterEn.v|22
+SLP=3*9487873
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|cd4db1dfafed9e6a2e28fe10c39c31da2aa7cb4b8edf8cedea9e91ba6d867878ee50362ca9e7c903ab7d65113eba841c
+
+[pc_register]
+A/pc_register=22|../src/pc_register.v|1|1*6551776
+BinW64/pc_register=3*6915048
+R=../src/pc_register.v|1
+SLP=3*6915601
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|45a3904a7bff2e1cfdfff04d34ac00150c9c41863d5241b3e32bdcd794e9351768b51dbade06e7ce0499da161cd7c0fb
+
+[processor]
+A/processor=22|../src/processor.v|1|1*10454327
+BinW64/processor=3*9483038
+R=../src/processor.v|1
+SLP=3*9484694
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|0ba77dee7e73996b5655ae47cd2cf07e7c4c90057ca4c0d4118ab0a7474483362b47ef72ad1dea4682bccbc29d2b1f53
+
+[tb_Adder32bit]
+A/tb_Adder32bit=22|../src/tb_Adder32bit.v|22|1*6200575
+BinW64/tb_Adder32bit=3*6631768
+R=../src/tb_Adder32bit.v|22
+SLP=3*6633362
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|7c1bf4f7f7c24ad1ab597f12a97a4c530b5bf6288daa5f90e64eb152f6e87b9d0b2b228163b98dfb1448a48b90030745
+
+[tb_Comparator]
+A/tb_Comparator=22|../src/tb_Comparator.v|24|1*6202211
+BinW64/tb_Comparator=3*6634917
+R=../src/tb_Comparator.v|24
+SLP=3*6636618
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|f998026b859957d19bc886aec725544386dd90f3920ffce15fd376ec142a26a9dbd9fb1a7ba33721bb1ab296affc8c1f
+
+[tb_DataMemory_Pipeline]
+A/tb_DataMemory_Pipeline=22|../src/tb_DataMemoryPipeline.v|23|1*6203771
+BinW64/tb_DataMemory_Pipeline=3*6638287
+R=../src/tb_DataMemoryPipeline.v|23
+SLP=3*6641611
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|df4d27f0015604d4e590bf1332f8bd737d313b61e845b86b6e7b04c054096fc5d01396923d9a221d3973cef63cada10f
+
+[tb_EX_MEM_Register]
+A/tb_EX_MEM_Register=22|../src/tb_EX_MEM_Register.v|24|1*6206641
+BinW64/tb_EX_MEM_Register=3*6645053
+R=../src/tb_EX_MEM_Register.v|24
+SLP=3*6647807
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|ae12b4e709adf11af68df1d8aca0fe7483da8cb37c71e2936801a949160db9f789f2d2a608a0fcf72a7aff7a208f7925
+
+[tb_Extender]
+A/tb_Extender=22|../src/ExtenderTestBench.v|3|1*6199425
+BinW64/tb_Extender=3*6630710
+R=../src/ExtenderTestBench.v|3
+SLP=3*6631345
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|071621b8e56d7a36148cca78f5e072588ce25e09c0eccaa413fc6e45a1eb927a6f3ad42145911cbd7fafebbfa96dfdb2
+
+[tb_ID_EX_Register]
+A/tb_ID_EX_Register=22|../src/tb_ID_EX_Register.v|24|1*6210455
+BinW64/tb_ID_EX_Register=3*6650674
+R=../src/tb_ID_EX_Register.v|24
+SLP=3*6655357
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|76219a42fec69fe9a5a7e691caa0b3022faea0e8683e43bc934e97d2d8ec42d1ec90665e433cf0afbbe0d8cadd2e1fd6
+
+[tb_IF_ID_Register]
+A/tb_IF_ID_Register=22|../src/tb_IF_ID_Register.v|24|1*6217460
+BinW64/tb_IF_ID_Register=3*6661001
+R=../src/tb_IF_ID_Register.v|24
+SLP=3*6663711
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|36f10b5be2552c97af038c6da804dc9022db84ebc780a0e5e7111aaca643f81f397e8fd1c2ffc39481a813f5176e8a8c
+
+[tb_MEM_WB_Register]
+A/tb_MEM_WB_Register=22|../src/tb_MEM_WB_Register.v|23|1*6219892
+BinW64/tb_MEM_WB_Register=3*6666264
+R=../src/tb_MEM_WB_Register.v|23
+SLP=3*6669562
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|2b24a8b2b0b743dd5d9b8b88a8dd1947f4a88b81b243e19cc88b6416a1b8bab973ed5b6a6b9c8b4ac1167f5c00783849
+
+[tb_Mux2to1_32bit]
+A/tb_Mux2to1_32bit=22|../src/tb_Mux2to1_32bit.v|22|1*6223412
+BinW64/tb_Mux2to1_32bit=3*6673053
+R=../src/tb_Mux2to1_32bit.v|22
+SLP=3*6675028
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|6e43721a27ca034ca4db1e2ad26183024d871b80da20202ea424ac851f3de2ed2076c6be413f6cac5bc25387577be51e
+
+[tb_RegisterFile]
+A/tb_RegisterFile=22|../src/tb_RegisterFile.v|23|1*6225180
+BinW64/tb_RegisterFile=3*6676970
+R=../src/tb_RegisterFile.v|23
+SLP=3*6680288
+Version=15.0.261.9132 (Windows64)|0000000b789cd3f53752d02d2e33ca3634070010af02ea|0f49ea698f596cf8595dc059387906960d73c5800f3cae4336e9ea90295ce96043e73933c61e7f8c3e30de8ce5d677c3
+
+[~U]
+$root=12|0*3383617|
+ALU=12|0*3384365|
+ALUControl=12|0*2179059|
+Adder=12|0*3384135|
+Adder32bit=12|0*2170833|
+Comparator=12|0*3384587|
+DataMemory=12|0*3384797|
+DataMemory_Pipeline=12|0*2683279|
+Decoder4to16=12|0*2174230|
+EX_MEM_Register=12|0*2283109|
+Extender=12|0*3387460|
+Extender18bit=12|0*2172431|
+Extender26bit=12|0*2179484|
+ForwardingUnit=12|0*3387942|
+ID_EX_Register=12|0*2283534|
+IF_ID_Register=12|0*2284055|
+InstructionMemory=12|0*3385041|
+MEM_WB_Register=12|0*2284554|
+MainControl=12|0*2178783|
+MainandALUControl=12|0*3387155|
+Mux16to1_32bit=12|0*3385510|
+Mux2to1=12|0*3385261|
+Mux2to1_32bit=12|0*110214|
+Mux4to1=12|0*3386629|
+Mux4to1_32bit=12|0*114517|
+PCControl=12|0*3387710|
+PC_Control_For_Pipelined_Jump_And_Branch=12|0*2287661||0x10
+PC_Control_PipelinedJumpAndBranch=12|0*2288248||0x10
+Processor_Functionallity_TB=12|0*3388773||0x10
+Processor_TB=12|0*3388475||0x10
+RegisterFile=12|0*3385811|
+SyncRegister=12|0*3388239|
+SyncRegisterEn=12|0*3386904|
+pc_register=12|0*2286380|
+processor=12|0*3386082|
+tb_Adder32bit=12|0*2175220||0x10
+tb_Comparator=12|0*2175497||0x10
+tb_DataMemory_Pipeline=12|0*2175770||0x10
+tb_EX_MEM_Register=12|0*2176129||0x10
+tb_Extender=12|0*2175049||0x10
+tb_ID_EX_Register=12|0*2176315||0x10
+tb_IF_ID_Register=12|0*2176654||0x10
+tb_MEM_WB_Register=12|0*2176943||0x10
+tb_Mux2to1_32bit=12|0*2177245||0x10
+tb_RegisterFile=12|0*2177527||0x10

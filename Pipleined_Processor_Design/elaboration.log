@@ -1,0 +1,39 @@
+Active-HDL 15.0.261.9132 2026-06-27 22:53:28
+
+Elaboration top modules:
+Verilog Module                Processor_TB
+
+
+--------------------------------------------------------------------------------------------------------------
+Verilog Module          | Library                    | Info | Compiler Version          | Compilation Options
+--------------------------------------------------------------------------------------------------------------
+Processor_TB            | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+processor               | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+Mux4to1                 | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+SyncRegisterEn          | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+Adder                   | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+InstructionMemory       | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+Mux2to1                 | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+MainandALUControl       | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+RegisterFile            | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+Extender                | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+Comparator              | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+PCControl               | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+ForwardingUnit          | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+SyncRegister            | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+ALU                     | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+DataMemory              | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+Mux16to1_32bit          | pipleined_processor_design |      | 15.0.261.9132 (Windows64) | -O2 -sv2k17
+--------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------
+Library                    | Comment
+-----------------------------------------------------------------------------------------------------------------
+pipleined_processor_design | None
+-----------------------------------------------------------------------------------------------------------------
+
+
+Simulation Options: asim -O5 +accb +accr +access +r Processor_TB
+
+
+The performance of simulation is reduced. Version Student Edition

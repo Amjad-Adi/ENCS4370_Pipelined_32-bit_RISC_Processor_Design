@@ -1,16 +1,8 @@
 module processor(input CLK);
 
-wire [31:0] Current_PC, Next_PC, PCPlus1, Instruction, BusA, BusB, BusW, ExtendedImmediate, ExtendedOffset, Branch_Address, Jump_Address, ALUOperandB, ALU_Result, Data_Out;
-wire [5:0] opcode = Instruction[31:26];
-wire [3:0] inst1 = Instruction[25:22];
-wire [3:0] Rs1 = Instruction[21:18], Rs2, Rd;
-wire [3:0] inst3 = Instruction[17:14];
-wire [17:0] Immediate = Instruction[17:0];
-wire [25:0] Offset = Instruction[25:0];
-wire [3:0] WriteRegister;
-wire [2:0] ALUOp;
-wire [1:0] WBData, PCSrc;
-wire EQ, RegDst, ExtOp, RegWr, ALUSrc, MemRd, MemWr, RegSrc;
+wire [31:0] Current_PC, Next_PC, PCPlus1, Instruction, BusW, Branch_Address, Jump_Address, ALU_Result, Data_Out;
+wire [1:0] PCSrc;
+wire EQ;
 wire kill_instruction;
 wire [31:0] Instruction_MuxOut;
 wire [31:0] IFID_PC_Out, IFID_PCPlus1_Out, IFID_Instruction_Out;
