@@ -37,13 +37,15 @@ This project implements a **five-stage pipelined 32-bit RISC processor** with ad
 - **Pipelined Architecture**: Five independent execution stages operating in parallel
 - **32-bit Processing**: Full 32-bit instruction and data width
 - **16 General-Purpose Registers**: R0 through R15, with R0 hardwired to zero
+- **20-Instruction Custom ISA**: 10 R-type, 8 I-type, and 2 J-type instructions (see [Supported Instructions](#supported-instructions))
 - **Integrated Hazard Detection**: Data hazard detection and stalling mechanism
 - **Data Forwarding**: Forwarding unit to minimize pipeline stalls
-- **Memory Subsystem**: Separate instruction and data memory with word-addressable organization
-- **Branch and Jump Support**: Full control flow instructions with proper branch prediction through comparator
+- **Memory Subsystem**: Separate instruction and data memory, word-addressable, 1024 words each in simulation (architecturally 4 GB / 2³⁰ words)
+- **Branch and Jump Support**: Full control-flow instructions, with the branch condition resolved one stage early (in ID) via a dedicated comparator, limiting the branch penalty to a single flushed instruction
+- **Atomic Register/Memory Exchange**: SWAP instruction, enabled by writing data memory on the negative clock edge and reading it on the following positive edge within the same cycle
 - **Sign/Zero Extension**: Immediate value extension for I-type instructions
 
-The processor is designed to execute a custom RISC instruction set with R-type, I-type, and J-type instruction formats.
+The processor executes a custom RISC instruction set with R-type, I-type, and J-type instruction formats, as defined in the course project specification (ENCS4370, Project 2).
 
 ---
 
@@ -53,11 +55,11 @@ The processor is designed to execute a custom RISC instruction set with R-type, 
 - ✅ **32-bit Processor** - Full 32-bit data width
 - ✅ **Five-Stage Pipelined Architecture** - IF, ID, EX, MEM, WB stages
 - ✅ **16 General-Purpose Registers** - 32 bits each
-- ✅ **Register File** - Dual-port read, single-port write
+- ✅ **Register File** - Dual-port read, single-port write (4-to-16 decoder for the write port, two 16-to-1 muxes for the two read ports)
 
 ### ALU and Computation
-- ✅ **ALU with 8 Operations** - ADD, AND, OR, XOR, SUB, NOR, SLL, SRL
-- ✅ **Comparator Unit** - 32-bit equality comparison for branch instructions
+- ✅ **ALU with 8 Operations** - ADD, SUB, AND, OR, XOR, NOR, SLL, SRL
+- ✅ **Comparator Unit** - 32-bit equality comparison, placed in the **ID stage** so branches resolve one cycle earlier than an EX-stage comparison would allow
 - ✅ **Immediate Extension** - Both sign and zero extension support
 - ✅ **32-bit Adder** - For PC and address calculations
 
@@ -65,17 +67,17 @@ The processor is designed to execute a custom RISC instruction set with R-type, 
 - ✅ **Branch Instructions** - BEQ (Branch if Equal), BNE (Branch if Not Equal)
 - ✅ **Jump Instructions** - J (Jump), JAL (Jump and Link), JR (Jump Register)
 - ✅ **PC Control Logic** - Dynamic PC update based on branch/jump conditions
-- ✅ **Branch Prediction** - Instruction flush on taken branches
+- ✅ **Early Branch Resolution** - Branch condition evaluated in the ID stage (not EX and not via prediction), reducing the branch penalty to one flushed instruction. Note: this is *not* branch prediction — true prediction (e.g., a branch target buffer) is listed under [Future Improvements](#future-improvements) and is not implemented.
 
 ### Memory System
-- ✅ **Instruction Memory** - 32-bit word-addressable
-- ✅ **Data Memory** - 32-bit word-addressable with 4GB capacity (256 words in simulation)
-- ✅ **Pipelined Memory Access** - Write on negative edge, read on positive edge
+- ✅ **Instruction Memory** - 32-bit word-addressable, 1024 words in simulation (4 GB architecturally)
+- ✅ **Data Memory** - 32-bit word-addressable, 1024 words in simulation (4 GB architecturally), supporting LW, SW, and SWAP
+- ✅ **Pipelined Memory Access** - Write on negative edge, read on positive edge (enables SWAP to complete an atomic exchange in a single cycle)
 
 ### Hazard Management
-- ✅ **Forwarding Unit** - Eliminates data hazards in most cases
-- ✅ **Stall Logic** - Detects load-use hazards and stalls pipeline
-- ✅ **Instruction Flush** - Kills instructions on branch/jump taken
+- ✅ **Forwarding Unit** - Eliminates data hazards in most cases (EX/MEM, MEM/WB, and WB forwarding paths)
+- ✅ **Stall Logic** - Detects load-use hazards and stalls pipeline for one cycle
+- ✅ **Instruction Flush** - Kills the single incorrectly-fetched instruction on a taken branch/jump
 
 ### Multiplexing
 - ✅ **2-to-1 Multiplexers** - For PC source, instruction flush, ALU operand selection
@@ -91,54 +93,52 @@ The processor is designed to execute a custom RISC instruction set with R-type, 
 The processor executes instructions through five distinct stages:
 
 #### **IF Stage (Instruction Fetch)**
-- Fetches 32-bit instruction from instruction memory
+- Fetches 32-bit instruction from instruction memory (combinational/asynchronous read)
 - Increments program counter (PC) by 1
-- Computes next PC for branches/jumps
-- **PC Logic**: Selects among:
-  - PC + 1 (normal sequential)
-  - Jump address (J instruction)
-  - Branch address (BEQ/BNE taken)
-  - Register value (JR instruction)
+- **PC Logic**: Selects among (2-bit `PCSrc`):
+  - `00`: PC + 1 (normal sequential)
+  - `01`: Jump/JAL target address
+  - `10`: Branch address (BEQ/BNE taken)
+  - `11`: Register value (JR)
+- The fetched instruction is replaced with a hardwired NOP (`CLR R0`) whenever `Kill` is asserted (branch taken or jump executed)
 
 #### **ID Stage (Instruction Decode)**
 - Decodes 6-bit opcode and instruction fields
-- Reads two operands from register file (Rs1, Rs2)
-- Generates control signals (10-bit control vector)
-- Computes immediate and offset extensions
-- Performs branch address calculation
-- Applies data forwarding to bypass operands
+- Reads two operands from register file (Rs, Rt/Rs2 as selected by `RegSrc`)
+- Generates control signals (10-bit control vector packed as `{ALUOp[2:0], ExtOp, RegWrite, ALUSrc, MemRead, MemWrite, WBData[1:0]}`)
+- Computes immediate/offset extension and the branch/jump target addresses
+- Evaluates the branch condition via the **Comparator**, resolving BEQ/BNE in this stage
+- Applies data forwarding to the operands *before* they reach the comparator and the ID/EX register
 - **Control Signal Generation**:
-  - RegDst: Register destination selection
-  - RegSrc: Register source selection
-  - ExtOp: Extension operation (sign/zero)
-  - RegWrite: Register write enable
-  - ALUSrc: ALU operand B selection
-  - MemRead/MemWrite: Memory control
-  - WBDataSelect: Write-back data multiplexer select
+  - `RegDst`: Selects the destination register address — `0` = Rd field of the instruction, `1` = R14 (hardwired link register, asserted only by JAL)
+  - `RegSrc`: Selects which instruction field supplies the second register-read address (`0` = R-type Rt field position, `1` = I-type Rt field position; also asserted for JR/JAL)
+  - `ExtOp`: Extension operation — `1` = sign-extend, `0` = zero-extend
+  - `RegWrite`: Register write enable
+  - `ALUSrc`: ALU operand B selection (register vs. immediate)
+  - `MemRead`/`MemWrite`: Memory control
+  - `WBDataSelect`: Write-back data multiplexer select
 
 #### **EX Stage (Execute)**
-- Performs ALU operation on operands
-- Selects ALU operand B (register or immediate)
-- Computes address calculations
-- Passes data for memory operations
+- Performs ALU operation on the (already forwarded) operands
+- Selects ALU operand B (register or immediate) via `ALUSrc`
+- Produces the ALU result (used as a memory address for LW/SW/SWAP, or as the final result for arithmetic/logical instructions)
 
 #### **MEM Stage (Memory Access)**
-- Reads from or writes to data memory
-- Memory write occurs on negative clock edge
-- Memory read occurs on positive clock edge
-- Selects write-back data (ALU result, memory data, or PC+1)
+- Reads from or writes to data memory (LW, SW, SWAP)
+- Memory write occurs on the negative clock edge; memory read occurs on the following positive clock edge — this lets SWAP write the register's old value out and read memory's old value back in the same cycle
+- Selects write-back data (ALU result, memory data, PC+1, or zero) via `WBDataSelect`
 
 #### **WB Stage (Write Back)**
-- Writes computation results to register file
-- Destination register from pipeline register
+- Purely combinational: connects the MEM/WB register outputs to the register file's write port
+- Destination register from pipeline register (`Rd4`)
 - Respects R0 hardwired-to-zero constraint
-- Results available for forwarding in next cycles
+- Result is also fed back as the oldest forwarding source (WB forwarding path)
 
 ### Data Flow
 
 ```
-IF → IFID Register → ID → IDEX Register → EX → EXMEM Register → MEM → MEMWB Register → WB
-          (Stall)                    (Forwarding)
+IF → IF/ID Register → ID → ID/EX Register → EX → EX/MEM Register → MEM → MEM/WB Register → WB
+        (Stall)                        (Forwarding, Branch Resolution)
 ```
 
 ---
@@ -147,130 +147,172 @@ IF → IFID Register → ID → IDEX Register → EX → EXMEM Register → MEM 
 
 ### Register File
 - **Capacity**: 16 × 32-bit registers (R0-R15)
-- **Read Ports**: 2 (simultaneous reads of RA and RB)
-- **Write Port**: 1 (writes to RW on positive clock edge)
-- **R0 Constraint**: Always reads as 0, writes are ignored
-- **Implementation**: 16-to-1 multiplexers for each read port
+- **Read Ports**: 2 (simultaneous, combinational/asynchronous reads of BusA and BusB)
+- **Write Port**: 1 (writes to RW on the positive clock edge, when `RegWrite` is asserted)
+- **R0 Constraint**: Always reads as 0; any write to R0 is silently ignored (enforced by both gating the write and forcing register 0 to zero every cycle)
+- **Implementation**: A 4-to-16 decoder drives the single write port; two independent 16-to-1 multiplexers drive the two read ports
 
 ### ALU (Arithmetic Logic Unit)
-- **Inputs**: 32-bit operands A and B, 3-bit control signal
+- **Inputs**: 32-bit operands A and B, 3-bit `ALUCtrl`
+- **Outputs**: 32-bit `Result`, 1-bit `Zero` flag
 - **Operations**:
   - ADD (3'b000): A + B
+  - SUB (3'b100): A - B
   - AND (3'b001): A & B
   - OR (3'b010): A | B
   - XOR (3'b011): A ^ B
-  - SUB (3'b100): A - B
   - NOR (3'b101): ~(A | B)
   - SLL (3'b110): A << B[4:0] (Shift Left Logical)
   - SRL (3'b111): A >> B[4:0] (Shift Right Logical)
+- **Note**: The `Zero` flag is *not* what resolves BEQ/BNE in the pipelined design — branch resolution uses the dedicated ID-stage Comparator's `Equal` signal instead. `Zero` only matters for the (unused, in this ISA) case of an ALU-result-based decision.
 
 ### Instruction Memory
-- **Addressing**: 32-bit word address
-- **Capacity**: Initialized from `imem.mem` file
-- **Access**: Combinational (reads on same cycle)
+- **Addressing**: 32-bit word address (byte address with bits `[31:2]` used, enforcing word alignment)
+- **Capacity**: 1024 words in simulation (architecturally 4 GB / 2³⁰ words), initialized from `imem.mem`
+- **Access**: Combinational (reads on the same cycle, no clock dependency)
 
 ### Data Memory
-- **Addressing**: 32-bit word address (byte address with [9:2] index)
-- **Capacity**: 256 words (initialized from `dmem.mem`)
+- **Addressing**: 32-bit word address (byte address with bits `[31:2]` used; for the 1024-word simulation size this is indexed with `Address[11:2]`)
+- **Capacity**: 1024 words in simulation (architecturally 4 GB), initialized from `dmem.mem`
+- **Supported operations**: LW, SW, and **SWAP** (atomic register↔memory exchange)
 - **Write Timing**: Negative clock edge (synchronous write)
 - **Read Timing**: Positive clock edge (synchronous read)
-- **Dual-edge Operation**: Enables pipelined read/write
+- **Dual-edge Operation**: The write-then-read ordering within one cycle is what makes SWAP possible without a temporary register or a second cycle
 
 ### Extender Unit
 - **Input Width**: Parameterizable (18-bit for immediates, 26-bit for offsets)
 - **Operation**:
-  - ExtOp = 0: Sign extension (MSB replicated)
-  - ExtOp = 1: Zero extension (padded with zeros)
+  - `ExtOp = 1`: Sign extension (MSB replicated) — used for ADDI, LW, SW, SWAP, BEQ, BNE, and (with `ExtOp` tied low, see below) the J/JAL offset
+  - `ExtOp = 0`: Zero extension (padded with zeros) — used for ANDI, ORI
+  - For the 26-bit J/JAL offset, `ExtOp` is hardwired to `0` (zero-extended, unsigned offset)
 - **Output**: 32 bits
 
 ### PC and Address Logic
 - **PC Adder**: Increments PC by 1 each cycle
-- **Branch Adder**: Adds immediate offset to PC for branch target
-- **Jump Adder**: Adds offset to PC for jump target
-- **PC Multiplexer**: 4-to-1 mux selecting next PC source based on instruction type
+- **Branch/Jump Adder**: Adds the sign/zero-extended immediate or offset to PC (using the IF/ID-latched PC+1) to form the branch or jump target
+- **PC Multiplexer**: 4-to-1 mux selecting the next PC source based on `PCSrc[1:0]`
 
 ### Pipeline Registers
-Four synchronous registers separate pipeline stages:
+Four synchronous registers separate pipeline stages. Bit widths below are derived directly from the signals each register is documented to carry (see [Pipeline Registers](#pipeline-registers) for the itemized breakdown):
 
 | Register | Width | Signals Carried |
 |----------|-------|-----------------|
-| **IF/ID** | 64 bits | Instruction (32), PC (32) |
-| **ID/EX** | 85 bits | Control signals (10), BusA (32), BusB (32), Immediate (32), PCPlus1 (32), Rd/Rs1/Rs2 (4) |
-| **EX/MEM** | 74 bits | Control signals (5), ALU Result (32), Data (32), PCPlus1 (32), Rd (4) |
+| **IF/ID** | 64 bits | Instruction (32), PC+1 (32) |
+| **ID/EX** | 150 bits | Control bundle (10), BusA (32), BusB (32), Extended Immediate (32), PC+1 (32), Rd (4), Rs1 (4), Rs2 (4) |
+| **EX/MEM** | 105 bits | Control bundle (5), ALU Result (32), Data/RtData (32), PC+1 (32), Rd (4) |
 | **MEM/WB** | 37 bits | Write-back data (32), Rd (4), RegWrite (1) |
 
 ---
 
 ## Control Unit
 
-### Main Control and ALU Control Module
+### Main and ALU Control (MainandALUControl)
 
-The `MainandALUControl` module generates all control signals based on the 6-bit opcode:
+The `MainandALUControl` module generates all control signals based on the 6-bit opcode, using the five least-significant bits (A4..A0 = opcode[4:0]); opcode bit 5 is always 0 across all 20 instructions and is unused.
 
 #### Control Signal Outputs
-- **RegDst** (1 bit): Register destination selection
-- **RegSrc** (1 bit): Register source (Rs2) selection
-- **ExtOp** (1 bit): Extension operation (sign/zero)
+- **RegDst** (1 bit): `0` = destination is the Rd field of the instruction, `1` = destination is R14 (asserted only by JAL)
+- **RegSrc** (1 bit): Selects which field supplies the second register-read address
+- **ExtOp** (1 bit): `1` = sign-extend the immediate, `0` = zero-extend it
 - **RegWrite** (1 bit): Register write enable
 - **ALUSrc** (1 bit): ALU operand B selection (register vs. immediate)
 - **MemRead** (1 bit): Memory read enable
 - **MemWrite** (1 bit): Memory write enable
 - **ALUOp** (3 bits): ALU operation selection
-- **WBDataSelect** (2 bits): Write-back data multiplexer select
+- **WBDataSelect** (2 bits): Write-back data multiplexer select — `00` = ALU result, `01` = memory read data, `10` = PC+1 (JAL), `11` = zero (CLR)
 
-#### Control Signal Generation Logic
-Control signals are generated using combinational logic based on opcode bits:
+#### Control Signal Truth Table (Single-Cycle Control Signals)
 
-```verilog
-// Example signal generation
-RegDst = A4 & ~A3 & ~A2
-RegWrite = (~A4 & ~A3) | (~A4 & A3 & ~A2 & (A1 | ~A0)) | ...
-ALUSrc = A3
-MemRead = A3 & A2 & A0
-MemWrite = A3 & A2 & A1
-```
+| OpCode | 6-bit | Instruction | RegDst | RegSrc | ExtOp | RegWrite | ALUSrc | MemRd | MemWr | WBData |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0  | 000000 | ADD  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 1  | 000001 | SUB  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 2  | 000010 | AND  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 3  | 000011 | OR   | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 4  | 000100 | XOR  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 5  | 000101 | NOR  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 6  | 000110 | SLL  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 7  | 000111 | SRL  | 0 | 0 | X | 1 | 0 | 0 | 0 | 00 |
+| 8  | 001000 | CLR  | 0 | X | X | 1 | X | 0 | 0 | 11 |
+| 9  | 001001 | JR   | X | X | X | 0 | X | 0 | 0 | X  |
+| 10 | 001010 | ADDI | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 00 |
+| 11 | 001011 | ANDI | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 00 |
+| 12 | 001100 | ORI  | 0 | 1 | 0 | 1 | 1 | 0 | 0 | 00 |
+| 13 | 001101 | LW   | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 01 |
+| 14 | 001110 | SW   | 0 | 1 | 1 | 0 | 1 | 0 | 1 | X  |
+| 15 | 001111 | SWAP | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 01 |
+| 16 | 010000 | BEQ  | X | 1 | 1 | 0 | 0 | 0 | 0 | X  |
+| 17 | 010001 | BNE  | X | 1 | 1 | 0 | 0 | 0 | 0 | X  |
+| 18 | 010010 | J    | X | X | X | 0 | X | 0 | 0 | X  |
+| 19 | 010011 | JAL  | 1 | X | X | 1 | X | 0 | 0 | 10 |
+
+*(Source: `Control_Signals.xlsx`, single-cycle control signal sheet, cross-checked against the design report's Table 2.)*
+
+#### Boolean Equations (from the control-signal spreadsheet, A = A4A3A2A1A0)
+
+| Control Signal | Logic Equation |
+|---|---|
+| ALUOp2 | A4'A3'A2A1 + A4'A3'A1'A0 |
+| ALUOp1 | A4'A3'A2A0' + A4'A3'A1A0 + A4'A2A1'A0' + A4A3'A2' |
+| ALUOp0 | A4'A3'A2A1' + A4'A3'A2A0 + A4'A3A2'A0 + A4A3'A2' + A3'A2'A1A0' |
+| RegDst | A4A3'A2' |
+| RegSrc | A4'A3 + A4A3'A2' |
+| ExtOp | A4 + A2A1 + (A1⊕A0) |
+| RegW (RegWrite) | A4'A3' + A4'A3A2'(A1+A0') + A4'A3A2(A1'+A0) + A4A3'A2'A1A0 |
+| ALUSrc | A3 |
+| MemRd | A3A2A0 |
+| MemWr | A3A2A1 |
+| Wbdata1 | A4'A3A2'A1' + A4A3'A2' |
+| Wbdata0 | A4'A3A2'A1' + A4'A3A2A0 |
+| PCSrc1 | A3A2'A1'A0 + A4A1'(Equal⊕A0) |
+| PCSrc0 | A3A2'A1'A0 + A4A1 |
 
 ### PC Control
 
 The `PCControl` module determines branch/jump behavior:
-- **Inputs**: 6-bit opcode, equality flag from comparator
-- **Outputs**: 2-bit PCSrc (selects PC source), Kill signal (flushes instruction)
+- **Inputs**: 6-bit opcode, `Equal` flag from the ID-stage Comparator
+- **Outputs**: 2-bit `PCSrc` (selects PC source), `Kill` (flushes the fetched instruction)
 - **Logic**:
-  - PCSrc[1:0] = 00: PC + 1 (sequential)
-  - PCSrc[1:0] = 01: Jump address
-  - PCSrc[1:0] = 10: Branch address
-  - PCSrc[1:0] = 11: Register value (JR)
-- **Kill**: Asserted when branch/jump taken to flush next instruction
+  - `PCSrc = 00`: PC + 1 (sequential — default)
+  - `PCSrc = 01`: Jump/JAL target address
+  - `PCSrc = 10`: Branch target address (asserted for BEQ when `Equal=1`, or BNE when `Equal=0`)
+  - `PCSrc = 11`: Register value from BusA (JR)
+- **Kill**: `Kill = PCSrc[1] | PCSrc[0]` — any non-sequential PC update flushes the instruction currently being fetched, replacing it with `CLR R0` (see [Hazard Handling](#hazard-handling))
 
 ---
 
 ## Supported Instructions
 
-The processor supports 16 instructions across three types: R-type (register), I-type (immediate), and J-type (jump).
+The processor supports **20 instructions** across three types: R-type (register), I-type (immediate), and J-type (jump), as defined by the ENCS4370 Project 2 specification.
 
-| Instruction | Type | Opcode (6-bit) | Funct (if R-type) | Description |
-|-------------|------|---|---|---|
-| **ADD** | R | 000000 | - | Rd ← Rs1 + Rs2 |
-| **SUB** | R | 000000 | - | Rd ← Rs1 - Rs2 |
-| **AND** | R | 000000 | - | Rd ← Rs1 & Rs2 |
-| **OR** | R | 000000 | - | Rd ← Rs1 \| Rs2 |
-| **XOR** | R | 000000 | - | Rd ← Rs1 ^ Rs2 |
-| **NOR** | R | 000000 | - | Rd ← ~(Rs1 \| Rs2) |
-| **SLL** | R | 000000 | - | Rd ← Rs1 << Rs2 |
-| **SRL** | R | 000000 | - | Rd ← Rs1 >> Rs2 |
-| **ADDI** | I | 001010 | - | Rd ← Rs1 + SignExt(Imm18) |
-| **ANDI** | I | 100010 | - | Rd ← Rs1 & ZeroExt(Imm18) |
-| **ORI** | I | 100110 | - | Rd ← Rs1 \| ZeroExt(Imm18) |
-| **CLR** | I | 001000 | - | Rd ← 0 |
-| **LW** | I | 100011 | - | Rd ← Mem[Rs1 + SignExt(Imm18)] |
-| **SW** | I | 101001 | - | Mem[Rs1 + SignExt(Imm18)] ← Rd |
-| **BEQ** | I | 010000 | - | if (Rs1 == Rs2) PC ← PC + SignExt(Offset18) |
-| **BNE** | I | 010001 | - | if (Rs1 ≠ Rs2) PC ← PC + SignExt(Offset18) |
-| **J** | J | 010010 | - | PC ← PC + ZeroExt(Offset26) |
-| **JAL** | J | 010011 | - | R14 ← PC + 1; PC ← PC + ZeroExt(Offset26) |
-| **JR** | J | 010100 | - | PC ← R[Rd] |
+| # | Instruction | Type | Opcode (dec) | Opcode (6-bit) | Description |
+|---|-------------|------|---|---|---|
+| 1  | **ADD**  | R | 0  | 000000 | Rd ← Rs + Rt |
+| 2  | **SUB**  | R | 1  | 000001 | Rd ← Rs - Rt |
+| 3  | **AND**  | R | 2  | 000010 | Rd ← Rs & Rt |
+| 4  | **OR**   | R | 3  | 000011 | Rd ← Rs \| Rt |
+| 5  | **XOR**  | R | 4  | 000100 | Rd ← Rs ^ Rt |
+| 6  | **NOR**  | R | 5  | 000101 | Rd ← ~(Rs \| Rt) |
+| 7  | **SLL**  | R | 6  | 000110 | Rd ← Rs << Rt |
+| 8  | **SRL**  | R | 7  | 000111 | Rd ← Rs >> Rt |
+| 9  | **CLR**  | R | 8  | 001000 | Rd ← 0 |
+| 10 | **JR**   | R | 9  | 001001 | PC ← Reg(Rs) |
+| 11 | **ADDI** | I | 10 | 001010 | Rt ← Rs + SignExt(Imm18) |
+| 12 | **ANDI** | I | 11 | 001011 | Rt ← Rs & ZeroExt(Imm18) |
+| 13 | **ORI**  | I | 12 | 001100 | Rt ← Rs \| ZeroExt(Imm18) |
+| 14 | **LW**   | I | 13 | 001101 | Rt ← Mem[Rs + SignExt(Imm18)] |
+| 15 | **SW**   | I | 14 | 001110 | Mem[Rs + SignExt(Imm18)] ← Rt |
+| 16 | **SWAP** | I | 15 | 001111 | Exchange Reg(Rt) with Mem[Rs + SignExt(Imm18)] |
+| 17 | **BEQ**  | I | 16 | 010000 | if (Rt == Rs) PC ← PC + SignExt(Imm18), else PC ← PC + 1 |
+| 18 | **BNE**  | I | 17 | 010001 | if (Rt ≠ Rs) PC ← PC + SignExt(Imm18), else PC ← PC + 1 |
+| 19 | **J**    | J | 18 | 010010 | PC ← PC + ZeroExt(Offset26) |
+| 20 | **JAL**  | J | 19 | 010011 | R14 ← PC + 1; PC ← PC + ZeroExt(Offset26) |
 
-**Note**: Exact opcode values are derived from the control unit logic. R-type instructions share opcode 000000 and are differentiated by function code (3-bit ALUOp field).
+**Notes**:
+- CLR and JR are **R-type**, not I-type — they simply leave the Rs/Rt fields (and, for CLR, Rd's operand fields) unused.
+- SWAP is an I-type memory instruction and is fully supported by the data memory's dual-edge read/write timing.
+- Immediate values are **sign-extended** for arithmetic, memory-address, and branch instructions, and **zero-extended** for logical instructions (ANDI, ORI), matching `ExtOp=1`/`ExtOp=0` respectively.
+- The 26-bit J/JAL offset is zero-extended (`ExtOp` hardwired to 0) in this implementation.
 
 ---
 
@@ -285,8 +327,8 @@ ENCS4370_Pipelined_32-bit_RISC_Processor_Design/
 ├── src/                               # Verilog source files
 │   ├── processor.v                    # Top-level processor module (5-stage pipeline)
 │   ├── ALU.v                          # Arithmetic Logic Unit (8 operations)
-│   ├── Comparator.v                   # 32-bit equality comparator for branches
-│   ├── DataMemory.v                   # Data memory (synchronous read/write)
+│   ├── Comparator.v                   # 32-bit equality comparator for branches (ID stage)
+│   ├── DataMemory.v                   # Data memory (synchronous read/write, supports SWAP)
 │   ├── Extender.v                     # Sign/zero extension unit
 │   ├── ForwardingUnit.v               # Data hazard forwarding logic
 │   ├── InstructionmMemory.v           # Instruction memory
@@ -320,7 +362,7 @@ ENCS4370_Pipelined_32-bit_RISC_Processor_Design/
 │
 ├── Pipelined Processor.drawio.svg     # Architecture diagram (Draw.io format)
 ├── Pipeline_Control_Signals.pdf       # Control signal documentation
-├── Control Signals.xlsx               # Detailed control signal spreadsheet
+├── Control Signals.xlsx               # Detailed control signal truth table (single-cycle)
 └── Pipelined_Processor_Design_*.pdf   # Design documentation report
 
 ```
@@ -364,9 +406,9 @@ processor
 ├── Register File
 ├── ALU
 ├── Data Memory
-├── Comparator
+├── Comparator (ID stage)
 ├── Forwarding Unit
-├── Control Unit
+├── Control Unit (MainandALUControl + PCControl)
 ├── Pipeline Registers (IF/ID, ID/EX, EX/MEM, MEM/WB)
 ├── Multiplexers
 ├── Adders
@@ -385,15 +427,16 @@ processor
 
 **Outputs**:
 - `ALUResult[31:0]`: 32-bit result
+- `Zero`: Asserted when `ALUResult == 0` (used only for ALU-result-based decisions; BEQ/BNE resolution uses the ID-stage Comparator instead)
 
 **Operations**:
 | Code | Operation | Description |
 |------|-----------|---|
 | 3'b000 | ADD | A + B |
+| 3'b100 | SUB | A - B |
 | 3'b001 | AND | A AND B |
 | 3'b010 | OR | A OR B |
 | 3'b011 | XOR | A XOR B |
-| 3'b100 | SUB | A - B |
 | 3'b101 | NOR | NOT(A OR B) |
 | 3'b110 | SLL | A << B[4:0] (Shift Left Logical) |
 | 3'b111 | SRL | A >> B[4:0] (Shift Right Logical) |
@@ -401,16 +444,16 @@ processor
 ---
 
 ### **Comparator.v**
-**Purpose**: Performs 32-bit equality comparison for branch instruction evaluation.
+**Purpose**: Performs 32-bit equality comparison for branch instruction evaluation, placed in the **ID stage** (not EX), so BEQ/BNE resolve one cycle earlier and only a single instruction needs to be flushed on a taken branch.
 
 **Inputs**:
-- `A[31:0]`: First 32-bit operand
-- `B[31:0]`: Second 32-bit operand
+- `A[31:0]`: First 32-bit operand (forwarded BusA)
+- `B[31:0]`: Second 32-bit operand (forwarded BusB)
 
 **Outputs**:
 - `Equal`: 1 if A == B, 0 otherwise
 
-**Implementation**: Combinational comparison using Verilog equality operator.
+**Implementation**: Combinational comparison using Verilog equality operator; receives forwarded operands so hazards involving branch sources are handled without extra stall cycles in most cases.
 
 ---
 
@@ -432,7 +475,7 @@ processor
 **Special Behavior**:
 - R0 (register 0) always reads as 0
 - Any write to R0 is ignored
-- Dual 16-to-1 multiplexers for read operations
+- A 4-to-16 decoder drives the write port; two independent 16-to-1 multiplexers drive the read ports
 
 ---
 
@@ -440,20 +483,20 @@ processor
 **Purpose**: Generates all main control signals and ALU control codes from opcode.
 
 **Inputs**:
-- `opcode[5:0]`: 6-bit instruction opcode
+- `opcode[5:0]`: 6-bit instruction opcode (only bits [4:0] are used; bit 5 is always 0)
 
 **Outputs**:
 - `ALUOp[2:0]`: ALU operation selector
-- `RegDst`: Register destination selection (0=inst1, 1=inst3)
+- `RegDst`: Register destination selection (0 = Rd field, 1 = R14, asserted only for JAL)
 - `RegSrc`: Register source selection
-- `ExtOp`: Extension operation (0=sign, 1=zero)
+- `ExtOp`: Extension operation (1 = sign, 0 = zero)
 - `RegWrite`: Register write enable
-- `ALUSrc`: ALU operand B source (0=register, 1=immediate)
+- `ALUSrc`: ALU operand B source (0 = register, 1 = immediate)
 - `MemRead`: Memory read enable
 - `MemWrite`: Memory write enable
 - `WBDataSelect[1:0]`: Write-back multiplexer select
 
-**Control Logic**: Implements combinational logic equations derived from the control signal truth table.
+**Control Logic**: Implements the combinational Boolean equations shown in [Control Unit](#control-unit), derived from the control signal truth table / spreadsheet.
 
 ---
 
@@ -463,9 +506,9 @@ processor
 **Inputs**:
 - `RA[3:0]`: Read register A address (ID stage)
 - `RB[3:0]`: Read register B address (ID stage)
-- `Rd2[3:0]`: Destination register from EX stage (Rd)
-- `Rd3[3:0]`: Destination register from MEM stage (Rd)
-- `Rd4[3:0]`: Destination register from WB stage (Rd)
+- `Rd2[3:0]`: Destination register from EX stage (Rd, from ID/EX register)
+- `Rd3[3:0]`: Destination register from MEM stage (Rd, from EX/MEM register)
+- `Rd4[3:0]`: Destination register from WB stage (Rd, from MEM/WB register)
 - `EX_RegWr`: Register write from EX stage
 - `MEM_RegWr`: Register write from MEM stage
 - `WB_RegWr`: Register write from WB stage
@@ -473,25 +516,25 @@ processor
 
 **Outputs**:
 - `ForwardA[1:0]`: Forwarding source selector for operand A
-  - 2'b00: No forwarding (use RA)
-  - 2'b01: Forward from EX (ALU result)
-  - 2'b10: Forward from MEM (computed/memory data)
-  - 2'b11: Forward from WB (final result)
+  - `2'b00`: No forwarding — use the register file value (ID_BusA)
+  - `2'b01`: EX-EX forward — ALU result currently in EX/MEM register (one cycle old)
+  - `2'b10`: MEM-EX forward — selected write-back data from the MEM/WB mux (two cycles old)
+  - `2'b11`: WB forward — value on BusW currently being written (three cycles old)
 - `ForwardB[1:0]`: Forwarding source selector for operand B (same codes)
-- `Stall`: Asserted when load-use hazard detected
+- `Stall`: Asserted when a load-use hazard is detected
 
 **Hazard Detection Logic**:
-- **Data Hazard Forwarding**: Compares operand addresses with destination registers of pending instructions
-- **Load-Use Stall**: Triggers stall when EX stage produces memory read that ID stage immediately needs
+- **Data Hazard Forwarding**: Priority order is EX/MEM first, then MEM/WB, then WB. Register R0 is never forwarded (it's hardwired to zero).
+- **Load-Use Stall**: Triggers a stall when the instruction in EX is a load (`EX_MemRd = 1`) and the instruction in ID needs that value (`ForwardA == 2'b01` or `ForwardB == 2'b01`).
 
 ---
 
 ### **DataMemory.v**
-**Purpose**: 256-word×32-bit data memory with pipelined read/write.
+**Purpose**: 1024-word × 32-bit data memory with pipelined read/write, supporting LW, SW, and SWAP.
 
 **Inputs**:
 - `Clk`: Clock signal
-- `Address[31:0]`: Word address (uses bits [9:2])
+- `Address[31:0]`: Word address (uses bits `[11:2]` for the 1024-word simulation size)
 - `Data_In[31:0]`: Data to write
 - `W`: Write enable
 - `R`: Read enable
@@ -500,9 +543,9 @@ processor
 - `Data_Out[31:0]`: Data read (latched on positive edge)
 
 **Timing**:
-- **Write**: Negative clock edge (when W=1)
-- **Read**: Positive clock edge (when R=1)
-- **Dual-edge operation** enables pipelined execution
+- **Write**: Negative clock edge (when `W=1`)
+- **Read**: Positive clock edge (when `R=1`)
+- **Dual-edge operation** enables both pipelined execution and the atomic SWAP instruction: the register's old value is written to memory on the negative edge, and the previous memory contents are read back on the following positive edge, all within one cycle.
 
 ---
 
@@ -515,11 +558,13 @@ processor
 **Inputs**:
 - `InputData[INPUT_WIDTH-1:0]`: Input value to extend
 - `ExtOp`: Extension operation selector
-  - 0 = Sign extension (MSB replicated)
-  - 1 = Zero extension (padded with zeros)
+  - `1` = Sign extension (MSB replicated)
+  - `0` = Zero extension (padded with zeros)
 
 **Outputs**:
 - `ExtendedData[31:0]`: 32-bit extended value
+
+**Note**: For the 26-bit J/JAL offset, `ExtOp` is hardwired to `0` (zero extension).
 
 ---
 
@@ -536,7 +581,7 @@ processor
 **Output**:
 - `OutputData[WIDTH-1:0]`: Selected data
 
-**Usage**: PC source, instruction flush, ALU operand selection, control signal gating.
+**Usage**: PC source, instruction flush (real instruction vs. `CLR R0` NOP), ALU operand selection, control signal gating.
 
 ---
 
@@ -563,11 +608,11 @@ processor
 
 **Outputs**:
 - `PCSrc[1:0]`: PC source selector
-  - 2'b00: PCPlus1 (sequential, next PC = PC + 1)
-  - 2'b01: Jump address
-  - 2'b10: Branch address (conditional)
-  - 2'b11: Register value (for JR)
-- `Kill`: Flush instruction signal (high when branch/jump taken)
+  - `2'b00`: PCPlus1 (sequential)
+  - `2'b01`: Jump/JAL address
+  - `2'b10`: Branch address (conditional, taken)
+  - `2'b11`: Register value (for JR)
+- `Kill`: `PCSrc[1] | PCSrc[0]` — flush instruction signal (high when branch/jump taken)
 
 ---
 
@@ -589,7 +634,7 @@ processor
 ---
 
 ### **SyncRegisterEn.v** (Enabled Synchronous Register)
-**Purpose**: Stores values with enable control for stallable pipeline registers.
+**Purpose**: Stores values with enable control for stallable pipeline registers (also used for the PC, so it can freeze during a stall).
 
 **Parameters**:
 - `WIDTH`: Register width (default 32)
@@ -615,7 +660,7 @@ processor
 **Outputs**:
 - `Instruction[31:0]`: Fetched instruction
 
-**Initialization**: Loads from `imem.mem` file.
+**Initialization**: Loads from `imem.mem` file. 1024 words in simulation (architecturally 4 GB).
 
 ---
 
@@ -639,56 +684,53 @@ processor
 **Signals Stored** (64 bits):
 | Signal | Width | Purpose |
 |--------|-------|---------|
-| `Instruction` | 32 | Full 32-bit instruction from IF stage |
-| `PC` | 32 | Program counter value from IF stage |
-| `PCPlus1` | 32 | Incremented PC (PC+1) from IF stage |
+| `Instruction` | 32 | Full 32-bit instruction from IF stage (post NOP-mux) |
+| `PCPlus1` | 32 | Incremented PC (PC+1), used for branch/jump target computation and JAL linking |
 
 **Characteristics**:
-- Transfers instruction and PC information to ID stage
-- Can be stalled (enable controlled by `~Stall` signal)
+- Transfers instruction and PC+1 to the ID stage
+- Can be stalled (enable controlled by `~Stall`)
 - Updated on negative clock edge
-- Allows ID stage to decode instruction while IF fetches next
+- Cleared to a NOP bubble on `Flush`/`Reset`
 
 ---
 
 ### **ID/EX Register** (Instruction Decode → Execute)
 
-**Signals Stored** (85 bits):
+**Signals Stored** (150 bits):
 | Signal | Width | Purpose |
 |--------|-------|---------|
-| `CtrlSignals` | 10 | Control signals: ALUOp(3), ExtOp(1), RegWr(1), ALUSrc(1), MemRd(1), MemWr(1), WBData(2) |
-| `BusA` | 32 | Operand A (from register file, possibly forwarded) |
-| `BusB` | 32 | Operand B (from register file, possibly forwarded) |
+| `CtrlSignals` | 10 | Packed bundle: `{ALUOp[2:0], ExtOp, RegWrite, ALUSrc, MemRead, MemWrite, WBData[1:0]}` |
+| `BusA` | 32 | Operand A (from register file, forwarded) |
+| `BusB` | 32 | Operand B (from register file, forwarded) |
 | `ExtImm` | 32 | Extended immediate value |
-| `PCPlus1` | 32 | Incremented PC for JAL instruction |
+| `PCPlus1` | 32 | Incremented PC for JAL write-back |
 | `Rd` | 4 | Destination register address |
-| `Rs1` | 4 | Source register 1 address |
-| `Rs2` | 4 | Source register 2 address |
+| `Rs1` | 4 | Source register 1 address (for forwarding comparisons) |
+| `Rs2` | 4 | Source register 2 address (for forwarding comparisons) |
 
 **Characteristics**:
-- Passes decoded instruction information and operands to EX stage
-- All control signals and data needed for execution
-- Does not stall (always updates)
-- Allows ID stage to move to next instruction while EX executes
+- Passes decoded instruction information, forwarded operands, and the 10-bit control bundle to the EX stage
+- The control bundle is muxed to all-zeros (a NOP bubble) when `Stall` is asserted; otherwise it always updates
+- Updated on negative clock edge
 
 ---
 
 ### **EX/MEM Register** (Execute → Memory)
 
-**Signals Stored** (74 bits):
+**Signals Stored** (105 bits):
 | Signal | Width | Purpose |
 |--------|-------|---------|
-| `CtrlSignals` | 5 | Compressed control: RegWr(1), MemRd(1), MemWr(1), WBData(2) |
-| `ALUResult` | 32 | Result from ALU execution |
-| `Data` | 32 | Data to write to memory (from register file) |
+| `CtrlSignals` | 5 | Packed bundle: `{RegWrite, MemRead, MemWrite, WBData[1:0]}` |
+| `ALUResult` | 32 | Result from ALU execution (also used as the memory address for LW/SW/SWAP) |
+| `Data` | 32 | Forwarded BusB value, needed by SW/SWAP as the store data |
 | `PCPlus1` | 32 | PC+1 for JAL write-back |
 | `Rd` | 4 | Destination register address |
 
 **Characteristics**:
-- Passes execution results to memory stage
-- Only necessary control signals (memory and write-back)
-- ALU result used as memory address
-- Write data prepared for memory operation
+- Passes execution results to the memory stage
+- Control signals consumed in EX (`ALUSrc`, `ALUOp`) are not carried forward, since they are no longer needed
+- Cleared to zero on `Flush`/`Reset`; holds its value on `Stall`
 
 ---
 
@@ -697,15 +739,13 @@ processor
 **Signals Stored** (37 bits):
 | Signal | Width | Purpose |
 |--------|-------|---------|
-| `Data` | 32 | Write-back data (ALU result, memory read, or PC+1) |
+| `Data` | 32 | Write-back data, already selected by the MEM-stage write-back mux (ALU result, memory data, PC+1, or zero) |
 | `Rd` | 4 | Destination register address |
 | `RegWr` | 1 | Register write enable |
 
 **Characteristics**:
-- Final stage register before write-back to register file
-- Carries computed/loaded data to write-back
-- Minimal control signals (only RegWr needed)
-- Destination register address for proper write location
+- Final pipeline register before write-back
+- Carries the smallest signal set, since the write-back data has already been resolved in MEM
 
 ---
 
@@ -717,79 +757,40 @@ processor
 
 **Problem**: An instruction tries to read a register before a previous instruction has written to it.
 
-**Example**:
-```
-Cycle:  1  2  3  4  5
-ADD R1...   IF ID EX MEM
-ADD R2,R1   -  IF ID  EX
-```
-In cycle 4, ID reads R1 while ADD still hasn't written to it (WB in cycle 5).
-
 **Solution - Forwarding Unit**:
 - Compares operand addresses (RA, RB) with destination registers in later pipeline stages (EX, MEM, WB)
-- If match found and destination register is being written, selects forwarded value
-- **Forwarding Sources**:
-  - ForwardA[1:0] = 2'b01: Use EX_ALU_Result (result about to complete)
-  - ForwardA[1:0] = 2'b10: Use WB_SelectedData (result from previous instruction)
-  - ForwardA[1:0] = 2'b11: Use BusW (result from two previous instruction)
-  - ForwardA[1:0] = 2'b00: Use register file (no hazard)
-
-**Forwarding Multiplexers**:
-```
-ForwardAMux selects between: {ID_BusA, EX_ALU_Result, WB_SelectedData, BusW}
-ForwardBMux selects between: {ID_BusB, EX_ALU_Result, WB_SelectedData, BusW}
-```
+- If a match is found and the destination register is being written, selects the forwarded value instead of the register-file output
+- Forwarding priority: EX/MEM (newest) → MEM/WB → WB (oldest)
+- Forwarding multiplexers sit in the **ID stage**, before the ID/EX register, so both the EX-stage ALU and the ID-stage Comparator see correctly forwarded operands
 
 #### **2. Load-Use Hazard**
 
-**Problem**: A Load instruction (LW) is followed immediately by an instruction using that loaded data. Data won't be available from memory until MEM stage.
-
-**Example**:
-```
-Cycle:  1  2  3  4  5  6
-LW R1...    IF ID EX MEM WB
-ADD R2,R1   -  IF ID  EX MEM
-                        ↑ Still reading R1, but data from memory arrives in cycle 5
-```
+**Problem**: A Load instruction (LW/SWAP) is followed immediately by an instruction using the loaded data. The data isn't available until the MEM stage, so forwarding alone cannot resolve it in time.
 
 **Solution - Stall Logic**:
-- Forwarding Unit detects: `EX_MemRd == 1 && (ForwardA == 2'd1 || ForwardB == 2'd1)`
-- Asserts `Stall` signal to pause pipeline
-- **Stall Effects**:
-  - PC register enable: `~Stall` (PC doesn't advance when stalled)
-  - IF/ID register enable: `~Stall` (instruction doesn't progress)
-  - Control signals muxed to zeros (next instruction sees no control signals)
-  - One NOP cycle inserted
-
-**After Stall**:
-```
-Cycle:  1  2  3  4  5  6  7
-LW R1...    IF ID EX MEM WB
-(stall)     -  IF ID  ID  EX
-ADD R2,R1   -  -  IF  ID  ID EX
-                             ↑ Data now available for forwarding
-```
+- The Forwarding Unit detects: `EX_MemRd == 1 && (ForwardA == 2'b01 || ForwardB == 2'b01)`
+- Asserts `Stall`, which:
+  - Disables the PC and IF/ID registers' enable (`~Stall`), freezing IF and re-decoding the same instruction
+  - Forces the ID/EX control bundle to all-zeros for one cycle (a NOP bubble)
+- One stall cycle is inserted; after it, forwarding resolves the dependency normally
 
 #### **3. Control Hazards (Branch/Jump)**
 
-**Problem**: PC changes on branch/jump, causing fetched instructions to be incorrect.
+**Problem**: The PC can change on a taken branch or a jump, so instructions fetched immediately afterward may be on the wrong path.
 
-**Example**:
+**Solution - Early Resolution + Single-Instruction Flush**:
+- The dedicated ID-stage Comparator resolves BEQ/BNE **in ID**, one stage earlier than resolving them in EX would allow
+- `PCControl` asserts `Kill = PCSrc[1] | PCSrc[0]` whenever the PC takes a non-sequential path (branch taken, J, JAL, or JR)
+- `Kill` drives a 2-to-1 mux that replaces the instruction just fetched with `CLR R0` (see NOP encoding below)
+- **Net effect: only one instruction is flushed per taken branch/jump** (a 1-cycle branch penalty), not two — because the condition is known by the end of ID rather than the end of EX
+
+Simplified timeline for a taken branch:
 ```
-Cycle:  1  2  3  4  5
-BEQ (taken)     IF ID EX
-next inst (WRONG) - IF ID
-target (CORRECT)   -  -  IF
-                           ↑ Two cycles of bubble
+Cycle:   1    2    3    4
+BEQ      IF   ID   EX   ...   (condition resolved at end of cycle 2, in ID)
+next     -    IF   (killed)         (wrong-path instruction fetched in cycle 2, flushed before it can affect state)
+target   -    -    IF    ID   ...   (correct-path instruction fetched in cycle 3)
 ```
-
-**Solution - Branch Flush**:
-- PCControl determines branch taken in ID stage
-- Asserts `Kill` signal to flush instruction in IF stage
-- Mux replaces instruction with NOP (opcode = 20'h00000000)
-- PC immediately updates to branch/jump target
-
-**Flush Instruction**: `32'b00100000000000000000000000000000` (NOP opcode)
 
 #### **4. Structural Hazards**
 
@@ -802,9 +803,22 @@ target (CORRECT)   -  -  IF
 
 ### **Hazard Not Implemented**
 
-- **Write-after-Write (WAW) Hazard**: Not possible with 5-stage pipeline (instructions must complete in order)
+- **Write-after-Write (WAW) Hazard**: Not possible with a 5-stage in-order pipeline (instructions complete in order)
 - **Write-after-Read (WAR) Hazard**: Not possible (pipeline is in-order)
 - **Out-of-Order Execution**: Not implemented (pipeline is strictly in-order)
+
+---
+
+## NOP Encoding
+
+The pipeline's flush/bubble instruction is **`CLR R0`**, not an all-zero instruction word:
+
+```
+opcode = 001000 (CLR)   Rd = 0000 (R0)   Rs = 0000   Rt = 0000   unused = 00000000000000
+32'b 001000_0000_0000_0000_00000000000000
+```
+
+**Why not an all-zero word?** An all-zero instruction decodes as `ADD R0, R0, R0`, which still asserts `RegWrite` and could create spurious matches in the Forwarding Unit. `CLR R0` has `Rd = 0`; since R0 is hardwired to zero and the Forwarding Unit never forwards from R0, this flush instruction is guaranteed to have no side effects in any pipeline stage.
 
 ---
 
@@ -815,15 +829,15 @@ The ALU supports 8 different operations selected by a 3-bit control signal:
 | ALUCtrl | Operation | Function | Example |
 |---------|-----------|----------|---------|
 | 3'b000 | **ADD** | Addition | ADD R1, R2, R3 → R1 = R2 + R3 |
+| 3'b100 | **SUB** | Subtraction | SUB R1, R2, R3 → R1 = R2 - R3 |
 | 3'b001 | **AND** | Bitwise AND | AND R1, R2, R3 → R1 = R2 & R3 |
 | 3'b010 | **OR** | Bitwise OR | OR R1, R2, R3 → R1 = R2 \| R3 |
 | 3'b011 | **XOR** | Bitwise XOR | XOR R1, R2, R3 → R1 = R2 ^ R3 |
-| 3'b100 | **SUB** | Subtraction | SUB R1, R2, R3 → R1 = R2 - R3 |
 | 3'b101 | **NOR** | Bitwise NOR | NOR R1, R2, R3 → R1 = ~(R2 \| R3) |
 | 3'b110 | **SLL** | Shift Left Logical | SLL R1, R2, R3 → R1 = R2 << R3[4:0] |
 | 3'b111 | **SRL** | Shift Right Logical | SRL R1, R2, R3 → R1 = R2 >> R3[4:0] |
 
-**Shift Operations**: Only lower 5 bits of operand B are used as shift amount (max shift = 31 bits).
+**Shift Operations**: Only the lower 5 bits of operand B are used as the shift amount (max shift = 31 bits). BEQ/BNE use `ALUOp = 011` (XOR) purely as a legacy/don't-care value in the single-cycle equations table — actual branch resolution in the pipelined design comes from the dedicated Comparator, not the ALU.
 
 ---
 
@@ -839,7 +853,6 @@ The ALU supports 8 different operations selected by a 3-bit control signal:
 - Displays pipeline signals and ALU operations
 - Monitors all 16 registers
 - Verifies data memory contents
-- 40-cycle execution window
 
 **Execution**:
 - Initializes register file with test values
@@ -847,66 +860,28 @@ The ALU supports 8 different operations selected by a 3-bit control signal:
 - Monitors final register state
 - Displays detailed execution trace with formatting
 
-**Output Example**:
-```
-Cycle  |    PC     | IF/ID | ID/EX | EX/MEM
-    20 |        20 | 0xa4  | 0x32  | 0x1000
-    40 |        40 | 0xb2  | 0xff  | 0x2000
-```
-
 #### **2. tb_processor.v** (Cycle Trace Testbench)
 **Purpose**: Simpler testbench with periodic status reporting.
 
 **Features**:
-- Reports every 200 time units
+- Reports every 10 time units (10 ns clock period)
 - Displays PC, opcode, ALU result, write-back data
 - Shows stall and forwarding status
-- Shorter execution window (5 cycles after test completion)
-
-**Output Format**:
-```
-Time   | PC    | Opcode    | ALU_Res   | WB_Data   | Stall/Fwd
-0      | 00000 | 001010    | 0000000001| 0000000001| S:0 F:00
-```
 
 ### **Test Programs**
 
 #### **TEST.asm** - ALU & Extender Verification
-Tests sign/zero extension and all ALU operations.
-
-**Coverage**:
-- Sign extension (ADDI with negative)
-- Zero extension (ANDI, ORI)
-- AND, OR, XOR operations
-- Shift Left Logical (SLL)
-- Shift Right Logical (SRL)
-- Zero flag detection (SUB R10, R2, R2 → 0)
-- Branch instruction (BEQ)
+Tests sign/zero extension and all ALU operations, including zero-flag/branch behavior (BEQ).
 
 #### **funtionallity_program.asm** - Full Instruction Set
-Comprehensive test covering most instructions.
-
-**Coverage**:
-- All arithmetic operations (ADD, SUB, AND, OR, XOR, NOR, SLL, SRL)
-- Immediate operations (ADDI, ANDI, ORI)
-- Clear instruction (CLR)
-- Memory operations (SW, LW)
-- Branch instructions (BEQ, BNE)
-- Jump instructions (J, JAL, JR)
+Comprehensive test covering all arithmetic, logical, shift, memory (LW/SW/SWAP), branch (BEQ/BNE), jump (J/JAL/JR), and CLR instructions.
 
 #### **hazard_program.asm** - Data Hazards & Forwarding
-Stress test for data hazard detection and forwarding unit.
-
-**Coverage**:
-- Back-to-back RAW hazards
-- Load-use hazards (LW followed by ADD using loaded register)
-- Multiple forwarding paths (EX, MEM, WB)
-- Stall scenarios
-- Branch delay effects
+Stress test for data hazard detection and forwarding, including load-use stalls and branch effects.
 
 #### **Binary Test Files**
-- `functionallity_test.bin`: Compiled binary of funtionallity_program.asm
-- `hazard_test.bin`: Compiled binary of hazard_program.asm
+- `functionallity_test.bin`: Compiled binary of `funtionallity_program.asm`
+- `hazard_test.bin`: Compiled binary of `hazard_program.asm`
 
 ---
 
@@ -924,88 +899,34 @@ The design is compatible with:
 
 #### **Compilation**
 ```bash
-# Compile all Verilog files
 vlib work
 vmap work ./work
 vlog src/*.v
-
-# Or compile specific files in order (resolving dependencies)
-vlog src/ALU.v
-vlog src/Comparator.v
-vlog src/RegisterFile.v
-vlog src/DataMemory.v
-vlog src/Extender.v
-vlog src/Mux2to1.v
-vlog src/Mux4to1.v
-vlog src/PCControl.v
-vlog src/SyncRegister.v
-vlog src/SyncRegisterEn.v
-vlog src/MainandALUControl.v
-vlog src/ForwardingUnit.v
-vlog src/Adder.v
-vlog src/InstructionmMemory.v
-vlog src/processor.v
-vlog src/tb_processor.v
-vlog src/Processor_Functionallity_TB.v
 ```
 
 #### **Simulation (Functionality Test)**
 ```bash
-# Launch ModelSim and run testbench
 vsim -c Processor_Functionallity_TB -do "run -all; quit"
-
-# Or interactive mode
-vsim Processor_Functionallity_TB
-run -all
 ```
 
 #### **Waveform Viewing**
 ```bash
-# View previously captured waveform
 vsim -view waveforms/functionallity_test_waveform.asdb
 ```
 
 ### **Icarus Verilog Simulation**
 
-#### **Compilation & Simulation**
 ```bash
-# Compile
-iverilog -o sim.vvp src/processor.v src/tb_processor.v \
-  src/*.v 2>&1 | grep -v "Warning"
-
-# Run
-vvp sim.vvp
-
-# With VCD waveform output
-iverilog -o sim.vvp src/processor.v src/Processor_Functionallity_TB.v \
-  src/*.v
+iverilog -o sim.vvp src/*.v
 vvp sim.vvp
 gtkwave dump.vcd &
 ```
 
 ### **Memory File Configuration**
 
-**Instruction Memory**: Load from `imem.mem`
-```verilog
-InstructionMemory Instruction_Memory(
-    .Address(Current_PC), 
-    .Instruction(Instruction)
-);
-// imem.mem contains hex-encoded 32-bit instructions
-// Each line: 32-bit hex value (e.g., 28400001 for ADDI R1,R0,1)
-```
+**Instruction Memory**: Load from `imem.mem` (hex-encoded 32-bit instructions, one per line)
 
 **Data Memory**: Load from `dmem.mem`
-```verilog
-DataMemory Data_Memory(
-    .Clk(CLK), 
-    .Address(EXMEM_R_Out), 
-    .Data_In(EXMEM_D_Out), 
-    .W(MEM_MemWr), 
-    .R(MEM_MemRd), 
-    .Data_Out(Data_Out)
-);
-```
 
 ---
 
@@ -1017,93 +938,36 @@ git clone https://github.com/Amjad-Adi/ENCS4370_Pipelined_32-bit_RISC_Processor_
 cd ENCS4370_Pipelined_32-bit_RISC_Processor_Design
 ```
 
-### **Step 2: Set Up Simulation Environment**
-
-#### **Option A: Using ModelSim**
+### **Step 2: Compile**
 ```bash
-# Create working library
+# ModelSim
 vlib work
 vmap work ./work
+vlog src/*.v
 
-# Compile all source files
-vlog src/ALU.v src/Comparator.v src/RegisterFile.v src/DataMemory.v \
-     src/Extender.v src/Mux2to1.v src/Mux4to1.v src/PCControl.v \
-     src/SyncRegister.v src/SyncRegisterEn.v src/MainandALUControl.v \
-     src/ForwardingUnit.v src/Adder.v src/InstructionmMemory.v \
-     src/processor.v src/Processor_Functionallity_TB.v
-```
-
-#### **Option B: Using Icarus Verilog**
-```bash
-# Compile all files
+# or Icarus Verilog
 iverilog -o processor_sim.vvp src/*.v
-
-# No build step needed, files auto-resolved by iverilog
 ```
 
-### **Step 3: Run Simulation**
-
-#### **With ModelSim**
+### **Step 3: Run**
 ```bash
-# Non-interactive (batch mode)
+# ModelSim
 vsim -c Processor_Functionallity_TB -do "run -all; quit"
 
-# Interactive mode
-vsim Processor_Functionallity_TB
-ModelSim> run -all
-ModelSim> quit
-```
-
-#### **With Icarus Verilog**
-```bash
-# Run simulation
+# Icarus Verilog
 vvp processor_sim.vvp
-
-# Run with output redirection
-vvp processor_sim.vvp > simulation_output.txt
-
-# View timing with GTKWave
-gtkwave dump.vcd
 ```
 
 ### **Step 4: View Waveforms**
-
-#### **ModelSim**
 ```bash
-# Within ModelSim GUI
-File → Open → waveforms/functionallity_test_waveform.asdb
-
-# Or command line
 vsim -view waveforms/functionallity_test_waveform.asdb
-```
-
-#### **GTKWave (Icarus)**
-```bash
-# View VCD file
+# or
 gtkwave dump.vcd &
-
-# Or with specific signals
-gtkwave -a signals.gtkw dump.vcd &
 ```
 
 ### **Step 5: Verify Output**
 
-**Expected Console Output** (Processor_Functionallity_TB):
-```
-==============================================================
-FINAL STATE
-==============================================================
-R0 =0      R1 =8
-R2 =4      R3 =3
-R4 =?      R5 =?
-... (all registers)
-DMEM[0]=<value>
-```
-
-**Interpretation**:
-- R0 must always be 0 (hardwired)
-- Other registers should match instruction execution results
-- DMEM values reflect successful memory operations
+Final register values should match the expected results in the design report (Table 5 for the single-cycle/functionality test, Table 6 for the pipelined test) — note the two tests use different initial register/memory contents and therefore different expected final values, but both confirm correct instruction execution.
 
 ---
 
@@ -1119,170 +983,75 @@ DMEM[0]=<value>
 | **GTKWave** | 3.3+ | Waveform viewer (for VCD files) |
 | **Text Editor** | Any | Source code editing |
 
-### **Hardware Requirements**
-
-- **Processor**: Any modern CPU (Intel/AMD/ARM)
-- **RAM**: 2 GB minimum
-- **Storage**: 100 MB (includes waveform files)
-- **Display**: Required for waveform viewing
-
 ### **System Requirements**
 
 - **OS**: Windows, Linux, or macOS
 - **Build Tools**: GCC (for compilation), Make (optional)
-- **Clock**: System clock for accurate timing
-
-### **Verilog Language Features Used**
-
-| Feature | Usage |
-|---------|-------|
-| `module` | All component definitions |
-| `reg`, `wire` | Data storage and connectivity |
-| `input`, `output` | Port definitions |
-| `always` | Sequential and combinational logic |
-| `assign` | Continuous assignment |
-| `case` | Multiplexing and ALU operations |
-| `parameter` | Configurable widths (multiplexers) |
-| `$readmemh` | Memory initialization from file |
-| `#(32)` | Parameterized instantiation |
 
 ---
 
 ## Design Decisions
 
 ### **1. Five-Stage Pipeline Over Single-Cycle**
-**Decision**: Implement a five-stage pipeline instead of single-cycle processor.
-
-**Rationale**:
-- Increases instruction throughput (ideally 1 instruction/cycle vs. 5+ cycles/instruction)
-- Allows deeper analysis of hazards, forwarding, and control flow
-- Educational value for understanding modern processor architecture
-- Trade-off: Increased complexity and hazard management overhead
-
----
+Increases instruction throughput and provides educational depth on hazards, forwarding, and control flow, at the cost of added hazard-management complexity.
 
 ### **2. Dual-Edge Clocking for Memory**
-**Decision**: Data memory reads on positive edge, writes on negative edge.
+Data memory reads on the positive edge and writes on the negative edge, enabling pipelined access without a second port — and, critically, letting **SWAP** perform its atomic register/memory exchange within a single cycle (write old register value on negedge, read old memory value back on the following posedge).
 
-**Rationale**:
-- Enables pipelined memory access without requiring separate read/write ports
-- Reduces memory latency from MEM stage (data available same cycle for WB)
-- Simplifies memory design while maintaining synchronization
-- Alternative would require write-after-read sequencing or separate memory blocks
+### **3. Forwarding Muxes Placed in the ID Stage**
+The forwarding multiplexers sit before the ID/EX register, so their outputs feed both the EX-stage ALU and the ID-stage Comparator — the comparator never needs its own separate forwarding hardware.
 
----
+### **4. Branch Resolution in the ID Stage**
+BEQ/BNE are resolved by a dedicated ID-stage Comparator rather than the ALU's `Zero` flag in EX. A taken branch therefore kills only **one** fetched instruction (a 1-cycle penalty) instead of two.
 
-### **3. Forwarding Unit for Hazard Mitigation**
-**Decision**: Use forwarding to bypass data hazards before stall detection.
+### **5. Stall by Freezing PC and IF/ID Registers**
+Load-use hazards are handled by de-asserting the enable of the PC and IF/ID registers (`en = ~Stall`) for one cycle, while the ID/EX control bundle is forced to all-zeros.
 
-**Rationale**:
-- Eliminates stalls for most RAW hazards (forwarding covers 90%+ of cases)
-- Only load-use hazards require actual pipeline stall
-- Improves throughput significantly compared to always-stall approach
-- Hardware cost is reasonable (multiplexers and comparators)
+### **6. NOP Encoded as `CLR R0`**
+Rather than an all-zero word (which would decode as `ADD R0,R0,R0` and assert `RegWrite`), the flush instruction is `CLR R0` — since R0 is hardwired to zero and never forwarded, this produces no side effects anywhere in the pipeline.
 
----
+### **7. PC+1 Propagated Through All Pipeline Stages**
+Needed so JAL can write the correct return address to R14 at the WB stage, several cycles after the instruction was fetched.
 
-### **4. In-Order Execution Pipeline**
-**Decision**: Maintain strict instruction order (no out-of-order execution).
+### **8. Control Signals Packed into Single Pipeline Registers**
+All ID→EX control signals are packed into one 10-bit bundle, and EX→MEM into a 5-bit bundle — this keeps the stall-bubble logic to a single all-zero assignment and keeps stage boundaries unambiguous.
 
-**Rationale**:
-- Simplifies hazard detection and control flow handling
-- Reduces design complexity significantly
-- Still achieves good IPC with forwarding and pipelining
-- Out-of-order execution would require complex dependency tracking
+### **9. Destination Register Propagated as Rd2, Rd3, Rd4**
+Naming the destination register explicitly at each stage makes the Forwarding Unit's priority (Rd2 highest, then Rd3, then Rd4) unambiguous in the implementation.
 
----
-
-### **5. Instruction Flush vs. Stall for Branches**
-**Decision**: Flush (kill) instruction in IF stage on branch taken, rather than stall.
-
-**Rationale**:
-- Flush achieves correct control flow faster than predicting/stalling
-- Branch decisions made in ID stage provide sufficient time
-- Introduces minimal branch penalty (1 cycle bubble)
-- Simpler than implementing branch prediction
-
----
-
-### **6. 16 Register Architecture**
-**Decision**: Use 16 general-purpose registers (R0-R15) instead of 32 or 8.
-
-**Rationale**:
-- 4-bit register addresses fit naturally in instruction encoding
-- Sufficient for test programs and typical algorithms
-- Reduces register file size compared to 32-register systems
-- Hardware cost is manageable (16-to-1 muxes)
-
----
-
-### **7. Word-Addressable Memory**
-**Decision**: Use word (32-bit) addressing instead of byte addressing.
-
-**Rationale**:
-- Simplifies memory indexing for 32-bit data
-- Reduces address decoder complexity
-- Instruction and data fetches are word-aligned by design
-- Standard approach for RISC architectures
-
----
-
-### **8. Synchronous Control Signal Generation**
-**Decision**: Generate all control signals from opcode combinationally in ID stage.
-
-**Rationale**:
-- No propagation delay penalty (generated from opcode immediately)
-- Control signals available same cycle as instruction decode
-- Simplifies pipeline register design (control signals propagate with instruction)
-- Alternative (ROM-based) would add memory access latency
-
----
-
-### **9. R0 Hardwired to Zero**
-**Decision**: Prevent writes to R0; always return 0 on reads.
-
-**Rationale**:
-- Standard RISC convention (MIPS, RISC-V)
-- Provides zero constant without explicit register
-- Common base register for addressing (0 + offset = offset)
-- Simplifies register file logic
+### **10. 16 Register Architecture / Word-Addressable Memory / R0 Hardwired to Zero**
+Standard RISC design choices: 4-bit register addressing fits the instruction encoding, word addressing simplifies the memory interface, and R0-as-zero is a common MIPS/RISC-V convention that simplifies addressing and default values.
 
 ---
 
 ## Future Improvements
 
 ### **Performance Enhancements**
-1. **Branch Prediction**: Implement branch target buffer (BTB) or static prediction to reduce branch penalty from 1 to 0 cycles
+1. **Branch Prediction**: Implement a branch target buffer (BTB) or static prediction to reduce the branch penalty from 1 cycle to 0 — *not implemented in the current design*, which only performs early (ID-stage) resolution, not prediction
 2. **Superscalar Execution**: Allow 2-3 instructions per cycle with multiple ALUs and fetch units
 3. **Cache System**: Add L1 instruction and data caches to reduce memory latency
-4. **Dynamic Branch Prediction**: Implement Gshare or tournament predictor for higher accuracy
+4. **Dynamic Branch Prediction**: Implement Gshare or a tournament predictor for higher accuracy
 
 ### **Feature Additions**
 5. **Exception Handling**: Add interrupt and exception support with trap handlers
-6. **Floating-Point Unit**: Extend ISA with FPU operations and floating-point registers
-7. **Virtual Memory**: Implement MMU with TLB for address translation
+6. **Floating-Point Unit**: Extend the ISA with FPU operations and floating-point registers
+7. **Virtual Memory**: Implement an MMU with TLB for address translation
 8. **Extended Instruction Set**: Add multiply/divide, bit manipulation, vector operations
 
 ### **Memory System**
 9. **Wider Memory Bus**: Increase to 64-bit or 128-bit for higher throughput
-10. **Memory Controller**: Add DRAM controller with refresh and timing control
-11. **Coherence Protocol**: For multi-core version (MSI/MESI/MOESI)
+10. **Memory Controller**: Add a DRAM controller with refresh and timing control
+11. **Coherence Protocol**: For a multi-core version (MSI/MESI/MOESI)
 
 ### **Design Verification**
 12. **Formal Verification**: Prove correctness properties with model checking
 13. **Comprehensive Testbenches**: Generate random instruction sequences for stress testing
 14. **Power Analysis**: Add power measurement and optimization
-15. **Design Documentation**: Auto-generate from RTL comments
-
-### **Implementation Targets**
-16. **FPGA Synthesis**: Target Xilinx Vivado or Intel Quartus for FPGA deployment
-17. **Physical Implementation**: Standard cell design and layout in 5nm/7nm process
-18. **Timing Closure**: Optimize for maximum clock frequency
 
 ### **Educational Enhancements**
-19. **Simulator Improvements**: Add GUI debugger with breakpoint and step-through support
-20. **Assembly Compiler**: Develop simple assembler to compile `.asm` files to `.mem` files
-21. **Interactive Visualization**: Real-time visualization of pipeline state and data flow
+15. **Simulator Improvements**: Add a GUI debugger with breakpoint/step-through support
+16. **Assembly Compiler**: Develop a simple assembler to compile `.asm` files to `.mem` files
+17. **Interactive Visualization**: Real-time visualization of pipeline state and data flow
 
 ---
 
@@ -1298,47 +1067,20 @@ Not specified in the repository. This is a university coursework project (ENCS43
 
 ### **Team Members and Responsibilities**
 
-#### **Amir — Student ID: 1231192**
+*(Per the design report cover page and Teamwork section — each member holds an equal 33.3% share, split by clean, non-overlapping component ownership across both the single-cycle and pipelined phases.)*
 
-**Single-Cycle Processor Responsibilities**:
-- Memory Units (Instruction Memory, Data Memory)
-- Register File design and implementation
-- Additional components (multiplexers, adders)
-- Verification and testing
+#### **Hanan Alawawda — Student ID: 1230827 (33.3%)**
+- The ALU and Extender unit, plus their single-cycle test program
+- The complete pipelined processor testbench (every stage, write-back, memory ops, branch behavior)
+- Redrew the architecture diagram from single-cycle to five-stage pipeline
 
-**Pipelined Processor Responsibilities**:
-- Memory system modifications for pipelined operation
-- Pipeline register design and implementation (IF/ID, ID/EX, EX/MEM, MEM/WB)
-- 32-bit comparator unit for branch comparison
-- Individual module testbenches
-- Control signal spreadsheet and documentation
+#### **Amir Abdel-Jabbar — Student ID: 1231192 (33.3%)**
+- Memory units (Instruction Memory, Data Memory), Register File, the 32-bit adder and 2-to-1 mux, and the single-cycle assembly test program
+- Extending into the pipeline: synchronizing Data Memory to split-edge read/write, designing all four pipeline registers, building the Comparator unit, and producing the full control-signal spreadsheet
 
-#### **Hanan — Student ID: 1230827**
-
-**Single-Cycle Processor Responsibilities**:
-- Arithmetic Logic Unit (ALU) with 8 operations
-- Extender unit (sign and zero extension)
-- Verification and testing
-- Assembly test programs
-
-**Pipelined Processor Responsibilities**:
-- Complete pipelined processor testbench
-- Pipeline validation for all instruction types
-- Architecture diagram update (Draw.io)
-- System verification and debugging support
-
-#### **Amjad — Student ID: 1230800**
-
-**Single-Cycle Processor Responsibilities**:
-- Control unit design and signal generation
-- System integration and datapath assembly
-- Verification and testing
-
-**Pipelined Processor Responsibilities**:
-- Full pipelined processor integration
-- Complete five-stage pipeline assembly
-- Control signal propagation through pipeline registers
-- Integration debugging and datapath verification
+#### **Amjad Qaher — Student ID: 1230800 (33.3%)**
+- Control unit design and signal generation, plus system integration and datapath assembly for the single-cycle design
+- Assembling and integrating the entire five-stage pipeline, wiring in every component, and supporting final validation against the testbench
 
 ---
 
@@ -1346,35 +1088,23 @@ Not specified in the repository. This is a university coursework project (ENCS43
 
 ### **Course Information**
 - **Course**: ENCS4370 (Computer Architecture)
-- **Institution**: Birzeit University
-- **Semester**: 2025-2026 Academic Year
+- **Institution**: Birzeit University, Faculty of Engineering and Technology, Electrical and Computer Engineering Department
+- **Semester**: Spring 2025-2026
 
 ### **Documentation Files in Repository**
 - `Pipelined_Processor_Design_*.pdf` - Complete design documentation report
 - `Pipeline_Control_Signals.pdf` - Control signal definitions and flow
-- `Control Signals.xlsx` - Detailed control signal truth table
+- `Control Signals.xlsx` - Detailed control signal truth table (single-cycle)
 - `Pipelined Processor.drawio.svg` - Architecture diagram
 
-### **Related Concepts and References**
-- MIPS ISA (Patterson & Hennessy, "Computer Organization & Design")
-- 5-Stage RISC Pipeline Architecture
-- Hazard Detection and Forwarding Units
-- Synchronous Memory Design
-- Verilog Hardware Description Language
-
 ### **Textbooks and References**
-- "Computer Organization and Design: The Hardware/Software Interface" - Patterson & Hennessy
-- "Digital Design" - Morris Mano
-- "Verilog HDL" - Samir Palnitkar
-- IEEE Std 1364-2005 (Verilog Language Reference)
+1. Lucid Software Inc., *Lucidchart* — flowcharts, diagrams, and system visualizations. https://www.lucidchart.com
+2. JGraph Ltd., *draw.io (diagrams.net)* — Datapath diagrams and architectural illustrations. https://www.diagrams.net
+3. David A. Patterson and John L. Hennessy, *Computer Organization and Design: The Hardware/Software Interface*, Morgan Kaufmann.
+4. David A. Patterson and John L. Hennessy, *Computer Architecture: A Quantitative Approach*, Morgan Kaufmann.
+5. Morris Mano and Michael D. Ciletti, *Digital Design*, Pearson.
+6. Course lecture slides, laboratory materials, and instructor-provided resources.
 
 ---
 
-## Acknowledgments
-
-This processor design was developed as part of the ENCS4370 Computer Architecture course at Birzeit University. The team expresses gratitude to the course instructors and the computer architecture community for guidance and educational resources.
-
----
-
-**Last Updated**: July 8, 2026  
 **Repository**: https://github.com/Amjad-Adi/ENCS4370_Pipelined_32-bit_RISC_Processor_Design
